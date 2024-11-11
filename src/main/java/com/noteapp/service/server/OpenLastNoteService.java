@@ -1,12 +1,12 @@
 package com.noteapp.service.server;
 
-import com.noteapp.dataaccess.BasicDataAccess;
-import com.noteapp.dataaccess.DataAccessException;
-import com.noteapp.dataaccess.NoteDataAccess;
-import com.noteapp.dataaccess.NoteKey;
-import com.noteapp.dataaccess.UserKey;
+import com.noteapp.dao.DAOException;
+import com.noteapp.dao.NoteDAO;
+import com.noteapp.dao.NoteKey;
+import com.noteapp.dao.UserKey;
 import com.noteapp.model.datatransfer.Note;
 import java.util.List;
+import com.noteapp.dao.BasicDAO;
 
 /**
  * Mở note được chỉnh sửa gần nhất bởi user
@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class OpenLastNoteService implements ServerService<Note> {   
     private String author;
-    protected BasicDataAccess<Note, NoteKey, UserKey> noteDataAccess;
+    protected BasicDAO<Note, NoteKey, UserKey> noteDataAccess;
     
     public OpenLastNoteService() {
         author = "";
@@ -31,8 +31,8 @@ public class OpenLastNoteService implements ServerService<Note> {
     }
 
     @Override
-    public Note execute() throws DataAccessException { 
-        noteDataAccess = NoteDataAccess.getInstance();
+    public Note execute() throws DAOException { 
+        noteDataAccess = NoteDAO.getInstance();
         List<Note> notes = noteDataAccess.getAll(new UserKey(author));
         return notes.getLast();
     }    

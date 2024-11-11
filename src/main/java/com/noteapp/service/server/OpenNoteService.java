@@ -1,11 +1,11 @@
 package com.noteapp.service.server;
 
-import com.noteapp.dataaccess.BasicDataAccess;
-import com.noteapp.dataaccess.DataAccessException;
-import com.noteapp.dataaccess.NoteDataAccess;
-import com.noteapp.dataaccess.NoteKey;
-import com.noteapp.dataaccess.UserKey;
+import com.noteapp.dao.DAOException;
+import com.noteapp.dao.NoteDAO;
+import com.noteapp.dao.NoteKey;
+import com.noteapp.dao.UserKey;
 import com.noteapp.model.datatransfer.Note;
+import com.noteapp.dao.BasicDAO;
 
 /**
  * Mở note với header và author cho trước
@@ -15,7 +15,7 @@ import com.noteapp.model.datatransfer.Note;
  */
 public class OpenNoteService implements ServerService<Note> {    
     private int noteId;
-    protected BasicDataAccess<Note, NoteKey, UserKey> noteDataAccess;
+    protected BasicDAO<Note, NoteKey, UserKey> noteDataAccess;
     
     public OpenNoteService() {
         noteId = -1;
@@ -30,8 +30,8 @@ public class OpenNoteService implements ServerService<Note> {
     }
  
     @Override
-    public Note execute() throws DataAccessException {        
-        noteDataAccess = NoteDataAccess.getInstance();
+    public Note execute() throws DAOException {        
+        noteDataAccess = NoteDAO.getInstance();
         return noteDataAccess.get(new NoteKey(noteId));
     }    
 }

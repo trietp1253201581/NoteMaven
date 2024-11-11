@@ -1,6 +1,6 @@
 package com.noteapp.service.server;
 
-import com.noteapp.dataaccess.DataAccessException;
+import com.noteapp.dao.DAOException;
 
 /**
  * Định nghĩa các phương thức xử lý service bên server
@@ -14,5 +14,5 @@ public interface ServerService<T> {
      * Thực thi service
      * @return Kết quả của việc thực thi
      */
-    T execute() throws DataAccessException;   
+    T execute() throws DAOException;   
 }

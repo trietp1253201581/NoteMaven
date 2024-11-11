@@ -1,17 +1,17 @@
 package com.noteapp.service.server;
 
-import com.noteapp.dataaccess.BasicDataAccess;
-import com.noteapp.dataaccess.DataAccessException;
-import com.noteapp.dataaccess.FailedExecuteException;
-import com.noteapp.dataaccess.NotExistDataException;
-import com.noteapp.dataaccess.NoteDataAccess;
-import com.noteapp.dataaccess.NoteKey;
-import com.noteapp.dataaccess.NullKey;
-import com.noteapp.dataaccess.UserDataAccess;
-import com.noteapp.dataaccess.UserKey;
+import com.noteapp.dao.DAOException;
+import com.noteapp.dao.FailedExecuteException;
+import com.noteapp.dao.NotExistDataException;
+import com.noteapp.dao.NoteDAO;
+import com.noteapp.dao.NoteKey;
+import com.noteapp.dao.NullKey;
+import com.noteapp.dao.UserDAO;
+import com.noteapp.dao.UserKey;
 import com.noteapp.model.datatransfer.Note;
 import com.noteapp.model.datatransfer.User;
 import java.util.List;
+import com.noteapp.dao.BasicDAO;
 
 /**
  * Lưu một note
@@ -21,8 +21,8 @@ import java.util.List;
  */
 public class SaveNoteService implements ServerService<Note> {    
     private Note note;
-    protected BasicDataAccess<Note, NoteKey, UserKey> noteDataAccess;
-    protected BasicDataAccess<User, UserKey, NullKey> userDataAccess;
+    protected BasicDAO<Note, NoteKey, UserKey> noteDataAccess;
+    protected BasicDAO<User, UserKey, NullKey> userDataAccess;
     
     public SaveNoteService() {
         note = new Note();
@@ -38,9 +38,9 @@ public class SaveNoteService implements ServerService<Note> {
     
 
     @Override
-    public Note execute() throws DataAccessException {
-        noteDataAccess = NoteDataAccess.getInstance();
-        userDataAccess = UserDataAccess.getInstance();
+    public Note execute() throws DAOException {
+        noteDataAccess = NoteDAO.getInstance();
+        userDataAccess = UserDAO.getInstance();
         try {
             noteDataAccess.get(new NoteKey(note.getId()));
             noteDataAccess.update(note);

@@ -1,13 +1,13 @@
 package com.noteapp.service.server;
 
-import com.noteapp.dataaccess.BasicDataAccess;
-import com.noteapp.dataaccess.DataAccessException;
-import com.noteapp.dataaccess.FailedExecuteException;
-import com.noteapp.dataaccess.NotExistDataException;
-import com.noteapp.dataaccess.NullKey;
-import com.noteapp.dataaccess.UserDataAccess;
-import com.noteapp.dataaccess.UserKey;
+import com.noteapp.dao.DAOException;
+import com.noteapp.dao.FailedExecuteException;
+import com.noteapp.dao.NotExistDataException;
+import com.noteapp.dao.NullKey;
+import com.noteapp.dao.UserDAO;
+import com.noteapp.dao.UserKey;
 import com.noteapp.model.datatransfer.User;
+import com.noteapp.dao.BasicDAO;
 
 /**
  * Tạo một User mới
@@ -17,7 +17,7 @@ import com.noteapp.model.datatransfer.User;
  */
 public class CreateUserService implements ServerService<User> {    
     private User user;
-    protected BasicDataAccess<User, UserKey, NullKey> userDataAccess;
+    protected BasicDAO<User, UserKey, NullKey> userDataAccess;
     
     public CreateUserService() {
         user = new User();
@@ -32,12 +32,12 @@ public class CreateUserService implements ServerService<User> {
     }
 
     @Override
-    public User execute() throws DataAccessException {       
+    public User execute() throws DAOException {       
         //Tạo một đối tượng access dữ liệu
-        userDataAccess = UserDataAccess.getInstance();
+        userDataAccess = UserDAO.getInstance();
         try {
             userDataAccess.get(new UserKey(user.getUsername()));
-            throw new DataAccessException("This user is already exist!");
+            throw new DAOException("This user is already exist!");
         } catch (FailedExecuteException ex1) {
             throw ex1;
         } catch (NotExistDataException ex2) {

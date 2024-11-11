@@ -4,6 +4,8 @@ import com.noteapp.model.datatransfer.Note;
 import com.noteapp.model.datatransfer.NoteBlock;
 import com.noteapp.model.datatransfer.ShareNote;
 import com.noteapp.model.datatransfer.User;
+import com.noteapp.service.security.MailService;
+import com.noteapp.service.security.VerificationCodeService;
 import com.noteapp.service.server.CollectionServerService;
 import com.noteapp.service.server.ServerService;
 import java.io.IOException;
@@ -28,6 +30,8 @@ public abstract class Controller {
     protected ServerService<NoteBlock> noteBlockService;
     protected CollectionServerService<Note> noteCollectionService;
     protected CollectionServerService<ShareNote> shareNoteCollectionService;
+    protected MailService mailService;
+    protected VerificationCodeService verificationCodeService;
     protected Stage stage;
     protected Scene scene;
     

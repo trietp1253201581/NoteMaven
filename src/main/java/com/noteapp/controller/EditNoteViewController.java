@@ -1,6 +1,6 @@
 package com.noteapp.controller;
 
-import com.noteapp.dataaccess.DataAccessException;
+import com.noteapp.dao.DAOException;
 import com.noteapp.model.datatransfer.Note;
 import com.noteapp.model.datatransfer.NoteBlock;
 import com.noteapp.model.datatransfer.NoteFilter;
@@ -123,7 +123,7 @@ public class EditNoteViewController extends Controller {
             try {
                 noteService = new OpenLastNoteService(myUser.getUsername());
                 myNote = noteService.execute();
-            } catch (DataAccessException ex) {
+            } catch (DAOException ex) {
                 myNote = new Note();
                 myNote.setAuthor(myUser.getUsername());
                 myNote.setHeader("NewNote");
@@ -175,7 +175,7 @@ public class EditNoteViewController extends Controller {
                         blockByHeaders = newBlockByHeaders;
                         updateBlock();
                         System.out.println(System.currentTimeMillis());
-                    } catch (DataAccessException ex) {
+                    } catch (DAOException ex) {
                         System.err.println(ex.getMessage());
                     }
                 });
@@ -211,7 +211,7 @@ public class EditNoteViewController extends Controller {
                 }
                 //Thiết lập note name vừa nhập cho Label   
                 noteHeaderLabel.setText(newNoteHeader);
-            } catch (DataAccessException ex) {
+            } catch (DAOException ex) {
                 showAlert(Alert.AlertType.ERROR, ex.getMessage());
             }
         });
@@ -239,7 +239,7 @@ public class EditNoteViewController extends Controller {
             noteService = new SaveNoteService(myNote);
             noteService.execute();
             showAlert(Alert.AlertType.INFORMATION, "Successfully save for " + myNote.getHeader());
-        } catch (DataAccessException ex) {
+        } catch (DAOException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }

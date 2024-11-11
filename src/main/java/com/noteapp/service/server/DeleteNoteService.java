@@ -1,15 +1,15 @@
 package com.noteapp.service.server;
 
-import com.noteapp.dataaccess.BasicDataAccess;
-import com.noteapp.dataaccess.DataAccessException;
-import com.noteapp.dataaccess.NoteDataAccess;
-import com.noteapp.dataaccess.NoteKey;
-import com.noteapp.dataaccess.ShareNoteDataAccess;
-import com.noteapp.dataaccess.ShareNoteKey;
-import com.noteapp.dataaccess.UserKey;
+import com.noteapp.dao.DAOException;
+import com.noteapp.dao.NoteDAO;
+import com.noteapp.dao.NoteKey;
+import com.noteapp.dao.ShareNoteDAO;
+import com.noteapp.dao.ShareNoteKey;
+import com.noteapp.dao.UserKey;
 import com.noteapp.model.datatransfer.Note;
 import com.noteapp.model.datatransfer.ShareNote;
 import java.util.List;
+import com.noteapp.dao.BasicDAO;
 
 /**
  * Xóa một Note đã có
@@ -19,8 +19,8 @@ import java.util.List;
  */
 public class DeleteNoteService implements ServerService<Note> {    
     private int noteId;
-    protected BasicDataAccess<Note, NoteKey, UserKey> noteDataAccess;
-    protected BasicDataAccess<ShareNote, ShareNoteKey, ShareNoteKey> shareNoteDataAccess;
+    protected BasicDAO<Note, NoteKey, UserKey> noteDataAccess;
+    protected BasicDAO<ShareNote, ShareNoteKey, ShareNoteKey> shareNoteDataAccess;
     
     public DeleteNoteService() {
         noteId = -1;
@@ -35,9 +35,9 @@ public class DeleteNoteService implements ServerService<Note> {
     }
 
     @Override
-    public Note execute() throws DataAccessException {    
-        noteDataAccess = NoteDataAccess.getInstance();
-        shareNoteDataAccess = ShareNoteDataAccess.getInstance();
+    public Note execute() throws DAOException {    
+        noteDataAccess = NoteDAO.getInstance();
+        shareNoteDataAccess = ShareNoteDAO.getInstance();
         Note deleteNote = noteDataAccess.get(new NoteKey(noteId));
         if(deleteNote.getLastModified() == 1) {
             List<Note> remainNotes = noteDataAccess.getAll(new UserKey(deleteNote.getAuthor()));

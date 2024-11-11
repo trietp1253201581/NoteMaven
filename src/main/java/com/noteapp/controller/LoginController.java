@@ -1,6 +1,6 @@
 package com.noteapp.controller;
 
-import com.noteapp.dataaccess.DataAccessException;
+import com.noteapp.dao.DAOException;
 import com.noteapp.model.datatransfer.Note;
 import com.noteapp.model.datatransfer.User;
 import com.noteapp.service.server.CheckLoginService;
@@ -51,7 +51,7 @@ public class LoginController extends Controller {
             openRegister();
         });
         forgotPasswordLabel.setOnMouseClicked((MouseEvent event) -> {
-            openForgotPasswordView();
+            openResetPasswordView();
         });
     }
 
@@ -69,7 +69,7 @@ public class LoginController extends Controller {
             showAlert(Alert.AlertType.INFORMATION, "Successfully Login");
             //Mở Dashboard của user này
             openEditNoteView(user);
-        } catch (DataAccessException ex) {
+        } catch (DAOException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }
@@ -117,13 +117,22 @@ public class LoginController extends Controller {
         }
     }
     
-    protected void openForgotPasswordView() {
+    protected void openResetPasswordView() {
         try {
-            String resource = "/com/noteapp/view/ForgotPasswordView.fxml";
-            URL fXMLLocation = getClass().getResource(resource);
-            setResource(fXMLLocation);
+            FXMLLoader fXMLLoader = new FXMLLoader();
+            String resetPasswordViewPath = "/com/noteapp/view/ResetPasswordView.fxml";
+            fXMLLoader.setLocation(getClass().getResource(resetPasswordViewPath));
+
+            scene = new Scene(fXMLLoader.load());
+            
+            ResetPasswordController controller = fXMLLoader.getController();
+            controller.setStage(stage);
+            controller.init();
+            
+            setSceneMoveable();
+            stage.setScene(scene);
         } catch (IOException ex) {
-            showAlert(Alert.AlertType.ERROR, "Can't open forgot password view");
+            showAlert(Alert.AlertType.ERROR, "Can't open reset password view");
         }
         
     }

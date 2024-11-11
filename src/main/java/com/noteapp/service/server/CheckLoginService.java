@@ -1,11 +1,11 @@
 package com.noteapp.service.server;
 
-import com.noteapp.dataaccess.BasicDataAccess;
-import com.noteapp.dataaccess.DataAccessException;
-import com.noteapp.dataaccess.NullKey;
-import com.noteapp.dataaccess.UserDataAccess;
-import com.noteapp.dataaccess.UserKey;
+import com.noteapp.dao.DAOException;
+import com.noteapp.dao.NullKey;
+import com.noteapp.dao.UserDAO;
+import com.noteapp.dao.UserKey;
 import com.noteapp.model.datatransfer.User;
+import com.noteapp.dao.BasicDAO;
 
 /**
  * Kiểm tra thông tin đăng nhập
@@ -16,7 +16,7 @@ import com.noteapp.model.datatransfer.User;
 public class CheckLoginService implements ServerService<User> {  
     private String username;
     private String password;
-    protected BasicDataAccess<User, UserKey, NullKey> userDataAccess;
+    protected BasicDAO<User, UserKey, NullKey> userDataAccess;
     
     public CheckLoginService() {
         username = "";
@@ -37,13 +37,13 @@ public class CheckLoginService implements ServerService<User> {
     }
     
     @Override
-    public User execute() throws DataAccessException {
-        userDataAccess = UserDataAccess.getInstance();
+    public User execute() throws DAOException {
+        userDataAccess = UserDAO.getInstance();
         User user = userDataAccess.get(new UserKey(username));
         if(password.equals(user.getPassword())) {
             return user;
         } else {
-            throw new DataAccessException("Password is false!");
+            throw new DAOException("Password is false!");
         }
     }    
 }

@@ -1,13 +1,13 @@
 package com.noteapp.service.server;
 
-import com.noteapp.dataaccess.BasicDataAccess;
-import com.noteapp.dataaccess.DataAccessException;
-import com.noteapp.dataaccess.NoteDataAccess;
-import com.noteapp.dataaccess.NoteKey;
-import com.noteapp.dataaccess.UserKey;
+import com.noteapp.dao.DAOException;
+import com.noteapp.dao.NoteDAO;
+import com.noteapp.dao.NoteKey;
+import com.noteapp.dao.UserKey;
 import com.noteapp.model.datatransfer.Note;
 
 import java.util.List;
+import com.noteapp.dao.BasicDAO;
 
 /**
  * Lấy tất cả các note của một user
@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class GetAllNotesService implements CollectionServerService<Note> {   
     private String author;
-    protected BasicDataAccess<Note, NoteKey, UserKey> noteDataAccess;
+    protected BasicDAO<Note, NoteKey, UserKey> noteDataAccess;
     
     public GetAllNotesService() {
         author = "";
@@ -32,8 +32,8 @@ public class GetAllNotesService implements CollectionServerService<Note> {
     }
   
     @Override
-    public List<Note> execute() throws DataAccessException {       
-        noteDataAccess = NoteDataAccess.getInstance();
+    public List<Note> execute() throws DAOException {       
+        noteDataAccess = NoteDAO.getInstance();
         return noteDataAccess.getAll(new UserKey(author));
     }   
 }

@@ -1,11 +1,11 @@
 package com.noteapp.service.server;
 
-import com.noteapp.dataaccess.BasicDataAccess;
-import com.noteapp.dataaccess.DataAccessException;
-import com.noteapp.dataaccess.ShareNoteDataAccess;
-import com.noteapp.dataaccess.ShareNoteKey;
+import com.noteapp.dao.DAOException;
+import com.noteapp.dao.ShareNoteDAO;
+import com.noteapp.dao.ShareNoteKey;
 import com.noteapp.model.datatransfer.ShareNote;
 import java.util.List;
+import com.noteapp.dao.BasicDAO;
 
 /**
  * Lấy tất cả các ShareNote được share tới user
@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class GetAllReceivedNotesService implements CollectionServerService<ShareNote> {
     private String receiver;
-    protected BasicDataAccess<ShareNote, ShareNoteKey, ShareNoteKey> shareNoteDataAccess;
+    protected BasicDAO<ShareNote, ShareNoteKey, ShareNoteKey> shareNoteDataAccess;
     
     public GetAllReceivedNotesService() {
         receiver = "";
@@ -30,8 +30,8 @@ public class GetAllReceivedNotesService implements CollectionServerService<Share
     }
     
     @Override
-    public List<ShareNote> execute() throws DataAccessException {
-        shareNoteDataAccess = ShareNoteDataAccess.getInstance();
+    public List<ShareNote> execute() throws DAOException {
+        shareNoteDataAccess = ShareNoteDAO.getInstance();
         return shareNoteDataAccess.getAll(new ShareNoteKey(-1, receiver));
     }
 }

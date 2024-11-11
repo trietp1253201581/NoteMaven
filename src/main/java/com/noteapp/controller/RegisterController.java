@@ -1,6 +1,6 @@
 package com.noteapp.controller;
 
-import com.noteapp.dataaccess.DataAccessException;
+import com.noteapp.dao.DAOException;
 import com.noteapp.model.datatransfer.Email;
 import com.noteapp.model.datatransfer.User;
 import com.noteapp.service.server.CreateUserService;
@@ -181,7 +181,7 @@ public class RegisterController extends Controller {
                 //Quay về trang đăng nhập
                 openLogin();
             }          
-        } catch (DataAccessException ex) {
+        } catch (DAOException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }

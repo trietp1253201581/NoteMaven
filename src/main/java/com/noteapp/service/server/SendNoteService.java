@@ -1,19 +1,19 @@
 package com.noteapp.service.server;
 
-import com.noteapp.dataaccess.BasicDataAccess;
-import com.noteapp.dataaccess.DataAccessException;
-import com.noteapp.dataaccess.FailedExecuteException;
-import com.noteapp.dataaccess.NotExistDataException;
-import com.noteapp.dataaccess.NoteDataAccess;
-import com.noteapp.dataaccess.NoteKey;
-import com.noteapp.dataaccess.NullKey;
-import com.noteapp.dataaccess.ShareNoteDataAccess;
-import com.noteapp.dataaccess.ShareNoteKey;
-import com.noteapp.dataaccess.UserDataAccess;
-import com.noteapp.dataaccess.UserKey;
+import com.noteapp.dao.DAOException;
+import com.noteapp.dao.FailedExecuteException;
+import com.noteapp.dao.NotExistDataException;
+import com.noteapp.dao.NoteDAO;
+import com.noteapp.dao.NoteKey;
+import com.noteapp.dao.NullKey;
+import com.noteapp.dao.ShareNoteDAO;
+import com.noteapp.dao.ShareNoteKey;
+import com.noteapp.dao.UserDAO;
+import com.noteapp.dao.UserKey;
 import com.noteapp.model.datatransfer.Note;
 import com.noteapp.model.datatransfer.ShareNote;
 import com.noteapp.model.datatransfer.User;
+import com.noteapp.dao.BasicDAO;
 
 
 /**
@@ -24,9 +24,9 @@ import com.noteapp.model.datatransfer.User;
  */
 public class SendNoteService implements ServerService<ShareNote> {
     private ShareNote shareNote;
-    protected BasicDataAccess<User, UserKey, NullKey> userDataAccess;
-    protected BasicDataAccess<Note, NoteKey, UserKey> noteDataAccess;
-    protected BasicDataAccess<ShareNote, ShareNoteKey, ShareNoteKey> shareNoteDataAccess;
+    protected BasicDAO<User, UserKey, NullKey> userDataAccess;
+    protected BasicDAO<Note, NoteKey, UserKey> noteDataAccess;
+    protected BasicDAO<ShareNote, ShareNoteKey, ShareNoteKey> shareNoteDataAccess;
     
     public SendNoteService() {
         shareNote = new ShareNote();
@@ -40,10 +40,10 @@ public class SendNoteService implements ServerService<ShareNote> {
         this.shareNote = shareNote;
     }
         @Override
-    public ShareNote execute() throws DataAccessException {
-        userDataAccess = UserDataAccess.getInstance();
-        noteDataAccess = NoteDataAccess.getInstance();
-        shareNoteDataAccess = ShareNoteDataAccess.getInstance();
+    public ShareNote execute() throws DAOException {
+        userDataAccess = UserDAO.getInstance();
+        noteDataAccess = NoteDAO.getInstance();
+        shareNoteDataAccess = ShareNoteDAO.getInstance();
         try {
             shareNoteDataAccess.get(new ShareNoteKey(shareNote.getId(), shareNote.getReceiver()));
             shareNoteDataAccess.update(shareNote);

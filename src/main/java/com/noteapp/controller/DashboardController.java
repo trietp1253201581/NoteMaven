@@ -3,7 +3,7 @@ package com.noteapp.controller;
 import com.noteapp.model.datatransfer.Note;
 import com.noteapp.model.datatransfer.ShareNote;
 import com.noteapp.model.datatransfer.User;
-import com.noteapp.dataaccess.DataAccessException;
+import com.noteapp.dao.DAOException;
 import com.noteapp.model.datatransfer.Email;
 import com.noteapp.model.datatransfer.NoteBlock;
 import com.noteapp.model.datatransfer.NoteFilter;
@@ -173,7 +173,7 @@ public class DashboardController extends Controller {
             try {
                 noteCollectionService = new GetAllNotesService(myUser.getUsername());
                 myNotes = noteCollectionService.execute();
-            } catch (DataAccessException ex) {
+            } catch (DAOException ex) {
                 myNotes = new ArrayList<>();
             }
             initMyNotesScene(myNotes);
@@ -187,7 +187,7 @@ public class DashboardController extends Controller {
             try {
                 noteCollectionService = new GetAllNotesService(myUser.getUsername());
                 myNotes = noteCollectionService.execute();
-            } catch (DataAccessException ex) {
+            } catch (DAOException ex) {
                 myNotes = new ArrayList<>();
             }
             initImportExportScene(myNotes);
@@ -200,7 +200,7 @@ public class DashboardController extends Controller {
                 //Lấy thành công
                 noteCollectionService = new GetAllNotesService(myUser.getUsername());
                 myNotes = noteCollectionService.execute();
-            } catch (DataAccessException ex) {
+            } catch (DAOException ex) {
                 showAlert(Alert.AlertType.ERROR, ex.getMessage());
             }
             //Lấy tất cả các note được share tới myUser này
@@ -208,7 +208,7 @@ public class DashboardController extends Controller {
                 //Lấy thành công
                 shareNoteCollectionService = new GetAllReceivedNotesService(myUser.getUsername());
                 mySharedNotes = shareNoteCollectionService.execute();
-            } catch (DataAccessException ex) {
+            } catch (DAOException ex) {
                 showAlert(Alert.AlertType.ERROR, ex.getMessage());
             }
             //Init lại Scene
@@ -259,7 +259,7 @@ public class DashboardController extends Controller {
             userLabel.setText(myUser.getName());
             noteCollectionService = new GetAllNotesService(myUser.getUsername());
             myNotes = noteCollectionService.execute();
-        } catch (DataAccessException ex) {
+        } catch (DAOException ex) {
             myNotes = new ArrayList<>();
         }
         initMyNotesScene(myNotes);
@@ -295,7 +295,7 @@ public class DashboardController extends Controller {
                             currentNote = noteService.execute();
                             //Load lại Edit Scene và mở Edit Scene
                             openEditNoteView(myUser, currentNote);
-                        } catch (DataAccessException ex) {
+                        } catch (DAOException ex) {
                             showAlert(Alert.AlertType.ERROR, ex.getMessage());
                         }
                     }
@@ -393,7 +393,7 @@ public class DashboardController extends Controller {
                             currentNote = noteService.execute();
                             //Load lại Edit Scene và mở Edit Scene
                             openEditNoteView(myUser, currentNote);
-                        } catch (DataAccessException ex) {
+                        } catch (DAOException ex) {
                             showAlert(Alert.AlertType.ERROR, ex.getMessage());
                         }
                     }
@@ -455,7 +455,7 @@ public class DashboardController extends Controller {
                 //Thêm vào list và load lại
                 myNotes.add(newNote);
                 initMyNotesScene(myNotes);
-            } catch (DataAccessException ex) {
+            } catch (DAOException ex) {
                 showAlert(Alert.AlertType.ERROR, ex.getMessage());
             }
         });
@@ -491,7 +491,7 @@ public class DashboardController extends Controller {
                 myNotes.remove(deletedNote);
                 //Load lại My Notes Scene
                 initMyNotesScene(myNotes);
-            } catch (DataAccessException ex) {
+            } catch (DAOException ex) {
                 showAlert(Alert.AlertType.ERROR, ex.getMessage());
             }
         });
@@ -569,7 +569,7 @@ public class DashboardController extends Controller {
             userService = new UpdateUserService(myUser);
             myUser = userService.execute();
             showAlert(Alert.AlertType.INFORMATION, "Successfully update for " + myUser.getUsername());
-        } catch (DataAccessException ex) {
+        } catch (DAOException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }
@@ -641,7 +641,7 @@ public class DashboardController extends Controller {
             shareNoteService.execute();
             //Thông báo
             showAlert(Alert.AlertType.INFORMATION, "Successfully share");
-        } catch (DataAccessException ex) {
+        } catch (DAOException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }
