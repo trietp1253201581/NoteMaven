@@ -1,36 +1,31 @@
 package com.noteapp.dao;
 
-import com.noteapp.model.NetworkProperty;
-import com.noteapp.model.datatransfer.NoteFilter;
-import com.noteapp.dao.connection.DatabaseConnection;
-import com.noteapp.dao.connection.MySQLDatabaseConnection;
-import java.sql.Connection;
+import com.noteapp.model.NoteFilter;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
  * @author admin
  */
-public class NoteFilterDAO implements BasicDAO<NoteFilter, NoteFilterKey, NoteKey> {
-    private final Connection connection;
-    protected DatabaseConnection databaseConnection;
+public class NoteFilterDAO extends DAO<NoteFilter>{
+    protected static final String NOTE_FILTERS_QUERIES_FILE_NAME = "NoteFiltersQueries.sql";
+
+    protected static enum ColumnName {
+        note_id, filter;
+    }
 
     /**
      * Khởi tạo và lấy connection tới Database
      */
     private NoteFilterDAO() {
-        String host = NetworkProperty.DATABASE_HOST;
-        int port = NetworkProperty.DATABASE_PORT;
-        String dbName = NetworkProperty.DATABASE_NAME;
-        String username = NetworkProperty.DATABASE_USERNAME;
-        String password = NetworkProperty.DATABASE_PASSWORD;
-        databaseConnection = new MySQLDatabaseConnection
-            (host, port, dbName, username, password);
-        this.connection = databaseConnection.getConnection();
+        super.sqlFileName = NOTE_FILTERS_QUERIES_FILE_NAME;
+        super.initConnection();
+        super.initEnableQueries();
     }
 
     private static class SingletonHelper {
@@ -53,7 +48,7 @@ public class NoteFilterDAO implements BasicDAO<NoteFilter, NoteFilterKey, NoteKe
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "SELECT * FROM note_filters ORDER BY noteid, filter";
+        String query = enableQueries.get(QueriesType.GET_ALL.toString());
 
         try {
             //Thực thi truy vấn SQL và lấy kết quả là một bộ dữ liệu
@@ -63,7 +58,7 @@ public class NoteFilterDAO implements BasicDAO<NoteFilter, NoteFilterKey, NoteKe
             while (resultSet.next()) {
                 NoteFilter noteFilter = new NoteFilter();
                 //Set dữ liệu cho noteFilter
-                noteFilter.setFilterContent(resultSet.getString("FILTER"));
+                noteFilter.setFilterContent(resultSet.getString(ColumnName.filter.toString()));
                 noteFilters.add(noteFilter);
             }    
             //Nếu noteFilters rỗng thì ném ngoại lệ là danh sách trống
@@ -74,62 +69,70 @@ public class NoteFilterDAO implements BasicDAO<NoteFilter, NoteFilterKey, NoteKe
     }
     
     @Override 
-    public List<NoteFilter> getAll(NoteKey referKey) throws DAOException {
+    public List<NoteFilter> getAll(DAOKey referKey) throws DAOException {
         List<NoteFilter> noteFilters = new ArrayList<>();
         //Kiểm tra connection có phải null không
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "SELECT filter FROM "
-                + "note_filters nf, notes nt"
-                + " WHERE nf.noteid = nt.id AND noteid = ?";
-
+        String query = enableQueries.get(QueriesType.GET_ALL_REFER.toString());
+        Map<String, String> keyMap = referKey.getKeyMap();
+        if(!keyMap.containsKey(ColumnName.note_id.toString())) {
+            throw new DAOKeyException();
+        }
+        int noteId = Integer.parseInt(keyMap.get(ColumnName.note_id.toString()));
         try {
             //Thực thi truy vấn SQL và lấy kết quả là một bộ dữ liệu
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setInt(1, referKey.getId());
+            preparedStatement.setInt(1, noteId);
             ResultSet resultSet = preparedStatement.executeQuery();
             //Chuyển từng hàng dữ liệu sang noteFilter và thêm vào list
             while (resultSet.next()) {
                 NoteFilter noteFilter = new NoteFilter();
                 //Set dữ liệu cho noteFilter
-                noteFilter.setFilterContent(resultSet.getString("FILTER"));
+                noteFilter.setFilterContent(resultSet.getString(ColumnName.filter.toString()));
                 noteFilters.add(noteFilter);
             }    
             //Nếu noteFilters rỗng thì ném ngoại lệ là danh sách trống
             return noteFilters;
-        } catch (SQLException ex) {
+        }  catch (SQLException ex) {
             throw new FailedExecuteException();
         }
     }
     
     @Override
-    public NoteFilter get(NoteFilterKey key) throws DAOException {
+    public NoteFilter get(DAOKey key) throws DAOException {
         NoteFilter noteFilter = new NoteFilter();
         //Kiểm tra connection có phải null không
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "SELECT filter FROM "
-                + "note_filters nf, notes nt"
-                + " WHERE nf.noteid = nt.id AND noteid = ? AND filter = ?";
-
+        String query = enableQueries.get(QueriesType.GET.toString());
+        Map<String, String> keyMap = key.getKeyMap();
+        if(!keyMap.containsKey(ColumnName.note_id.toString())) {
+            throw new DAOKeyException();
+        }
+        if(!keyMap.containsKey(ColumnName.filter.toString())) {
+            throw new DAOKeyException();
+        }
+        int noteId = Integer.parseInt(keyMap.get(ColumnName.note_id.toString()));
+        String filter = keyMap.get(ColumnName.filter.toString());
         try {
             //Thực thi truy vấn SQL và lấy kết quả là một bộ dữ liệu
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setInt(1, key.getNoteId());
-            preparedStatement.setString(2, key.getFilter());
+            preparedStatement.setInt(1, noteId);
+            preparedStatement.setString(2, filter);
             ResultSet resultSet = preparedStatement.executeQuery();
             //Chuyển từng hàng dữ liệu sang noteFilter và thêm vào list
             while (resultSet.next()) {
                 //Set dữ liệu cho noteFilter
-                noteFilter.setFilterContent(resultSet.getString("FILTER"));
+                noteFilter.setFilterContent(resultSet.getString(ColumnName.filter.toString()));
             }    
             //Nếu không tồn tại thì ném ngoại lệ
             if(noteFilter.isDefaultValue()) {
-                throw new NotExistDataException("Block is not exist!");
+                throw new NotExistDataException();
             }   
             return noteFilter;
         } catch (SQLException ex) {
@@ -138,29 +141,33 @@ public class NoteFilterDAO implements BasicDAO<NoteFilter, NoteFilterKey, NoteKe
     }
     
     @Override
-    public NoteFilter add(NoteFilter noteFilter) throws DAOException {
-        throw new FailedExecuteException();
+    public NoteFilter create(NoteFilter newNoteFilter) throws DAOException {
+        throw new UnsupportedQueryException();
     }
     
     @Override
-    public NoteFilter add(NoteFilter noteFilter, NoteFilterKey key) throws DAOException {
+    public NoteFilter create(NoteFilter newNoteFilter, DAOKey key) throws DAOException {
         //Kiểm tra null
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "INSERT INTO note_filters(noteid, filter) "
-                + "VALUES(?,?)";
+        String query = enableQueries.get(QueriesType.CREATE_KEY.toString());
+        Map<String, String> keyMap = key.getKeyMap();
+        if(!keyMap.containsKey(ColumnName.note_id.toString())) {
+            throw new DAOKeyException();
+        }
+        int noteId = Integer.parseInt(keyMap.get(ColumnName.note_id.toString()));
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             //Set các tham số cho truy vấn
-            preparedStatement.setInt(1, key.getNoteId());
-            preparedStatement.setString(2, key.getFilter());
+            preparedStatement.setInt(1, noteId);
+            preparedStatement.setString(2, newNoteFilter.getFilterContent());
             
             if(preparedStatement.executeUpdate() <= 0) {
                 throw new FailedExecuteException();
             }
-            return noteFilter;
+            return newNoteFilter;
         } catch (SQLException ex) {
             throw new FailedExecuteException();
         }
@@ -168,28 +175,36 @@ public class NoteFilterDAO implements BasicDAO<NoteFilter, NoteFilterKey, NoteKe
     
     @Override
     public void update(NoteFilter noteFilter) throws DAOException {
-        throw new FailedExecuteException();
+        throw new UnsupportedQueryException();
     }
     
     @Override
-    public void update(NoteFilter noteFilter, NoteFilterKey key) throws DAOException {
-        throw new FailedExecuteException();
+    public void update(NoteFilter noteFilter, DAOKey key) throws DAOException {
+        throw new UnsupportedQueryException();
     }
     
     @Override
-    public void delete(NoteFilterKey key) throws DAOException {
+    public void delete(DAOKey key) throws DAOException {
         //Kiểm tra null
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "DELETE FROM note_filters WHERE noteid = ? AND filter = ?";
-
+        String query = enableQueries.get(QueriesType.DELETE.toString());
+        Map<String, String> keyMap = key.getKeyMap();
+        if(!keyMap.containsKey(ColumnName.note_id.toString())) {
+            throw new DAOKeyException();
+        }
+        if(!keyMap.containsKey(ColumnName.filter.toString())) {
+            throw new DAOKeyException();
+        }
+        int noteId = Integer.parseInt(keyMap.get(ColumnName.note_id.toString()));
+        String filter = keyMap.get(ColumnName.filter.toString());
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             //Set các tham số cho truy vấn
-            preparedStatement.setInt(1, key.getNoteId());
-            preparedStatement.setString(2, key.getFilter());
+            preparedStatement.setInt(1, noteId);
+            preparedStatement.setString(2, filter);
 
             if(preparedStatement.executeUpdate() < 0) {
                 throw new FailedExecuteException();
@@ -200,18 +215,22 @@ public class NoteFilterDAO implements BasicDAO<NoteFilter, NoteFilterKey, NoteKe
     }
     
     @Override
-    public void deleteAll(NoteKey referKey) throws DAOException {
+    public void deleteAll(DAOKey referKey) throws DAOException {
         //Kiểm tra null
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "DELETE FROM note_filters WHERE noteid = ?";
+        String query = enableQueries.get(QueriesType.GET_ALL_REFER.toString());
+        Map<String, String> keyMap = referKey.getKeyMap();
+        if(!keyMap.containsKey(ColumnName.note_id.toString())) {
+            throw new DAOKeyException();
+        }
+        int noteId = Integer.parseInt(keyMap.get(ColumnName.note_id.toString()));
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             //Set các tham số cho truy vấn
-            preparedStatement.setInt(1, referKey.getId());
-            
+            preparedStatement.setInt(1, noteId);
 
             if(preparedStatement.executeUpdate() < 0) {
                 throw new FailedExecuteException();

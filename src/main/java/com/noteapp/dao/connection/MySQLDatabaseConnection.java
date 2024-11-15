@@ -3,6 +3,8 @@ package com.noteapp.dao.connection;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Triển khai phương thức tới CSDL
@@ -10,21 +12,20 @@ import java.sql.SQLException;
  * @since 30/03/2024
  * @version 1.0
  */
-public class MySQLDatabaseConnection implements DatabaseConnection {
-    private final String url;
-    private final String username;
-    private final String password; 
+public class MySQLDatabaseConnection extends DatabaseConnection {
 
     public MySQLDatabaseConnection(String url, String username, String password) {
-        this.url = url;
-        this.username = username;
-        this.password = password;
+        super.url = url;
+        super.username = username;
+        super.password = password;
+        super.enableQueries = new HashMap<>();
     }
     
     public MySQLDatabaseConnection(String host, int port, String database, String username, String password) {
         url = "jdbc:mysql://" + host + ":" + port + "/" + database;
-        this.username = username;
-        this.password = password;
+        super.username = username;
+        super.password = password;
+        super.enableQueries = new HashMap<>();
     }
     
     /**

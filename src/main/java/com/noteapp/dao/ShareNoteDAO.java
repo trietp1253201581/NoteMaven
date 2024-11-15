@@ -1,17 +1,12 @@
 package com.noteapp.dao;
 
-import com.noteapp.model.NetworkProperty;
-import com.noteapp.model.datatransfer.Note;
-import com.noteapp.model.datatransfer.ShareNote;
-import com.noteapp.dao.connection.DatabaseConnection;
-import com.noteapp.dao.connection.MySQLDatabaseConnection;
-import com.noteapp.model.datatransfer.NoteBlock;
-import java.sql.Connection;
+import com.noteapp.model.ShareNote;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Triển khai các phương thức thao tác dữ liệu với ShareNote
@@ -19,24 +14,17 @@ import java.util.List;
  * @since 06/04/2024
  * @version 1.0
  */
-public class ShareNoteDAO implements BasicDAO<ShareNote, ShareNoteKey, ShareNoteKey> {
-    private final Connection connection;
-    protected DatabaseConnection databaseConnection;
-    
-    protected BasicDAO<Note, NoteKey, UserKey> noteDataAccess;
-    protected BasicDAO<NoteBlock, NoteBlockKey, NoteKey> blockDataAccess;
+public class ShareNoteDAO extends DAO<ShareNote> {
+    protected static final String SHARE_NOTE_QUERIES_FILE_NAME = "ShareNoteQueries.sql";
+
+    protected static enum ColumnName {
+        note_id, receiver, share_type; 
+    }
 
     private ShareNoteDAO() {
-        String host = NetworkProperty.DATABASE_HOST;
-        int port = NetworkProperty.DATABASE_PORT;
-        String dbName = NetworkProperty.DATABASE_NAME;
-        String username = NetworkProperty.DATABASE_USERNAME;
-        String password = NetworkProperty.DATABASE_PASSWORD;
-        databaseConnection = new MySQLDatabaseConnection
-            (host, port, dbName, username, password);
-        this.connection = databaseConnection.getConnection();
-        noteDataAccess = NoteDAO.getInstance();
-        blockDataAccess = NoteBlockDAO.getInstance();
+        super.sqlFileName = SHARE_NOTE_QUERIES_FILE_NAME;
+        super.initConnection();
+        super.initEnableQueries();
     }
     
     private static class SingletonHelper {
@@ -59,10 +47,7 @@ public class ShareNoteDAO implements BasicDAO<ShareNote, ShareNoteKey, ShareNote
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "SELECT NOTEID, RECEIVER, SHARETYPE "
-                + "FROM sharenotes sh, users us, notes nt "
-                + "WHERE sh.RECEIVER = us.USERNAME AND NOTEID = nt.Id "
-                + "ORDER BY noteid, receiver, sharetype";
+        String query = enableQueries.get(QueriesType.GET_ALL.toString());
 
         try {
             //Set các tham số, thực thi truy vấn và lấy kết quả
@@ -72,11 +57,9 @@ public class ShareNoteDAO implements BasicDAO<ShareNote, ShareNoteKey, ShareNote
             //Duyệt các hàng kết quả
             while (resultSet.next()) {
                 ShareNote shareNote = new ShareNote();
-                int noteId = resultSet.getInt("NOTEID");
-                Note note = noteDataAccess.get(new NoteKey(noteId));
-                shareNote.setNote(note);
-                shareNote.setReceiver(resultSet.getString("RECEIVER"));
-                shareNote.setShareType(ShareNote.ShareType.valueOf(resultSet.getString("SHARETYPE")));
+                shareNote.setId(resultSet.getInt(ColumnName.note_id.toString()));
+                shareNote.setReceiver(resultSet.getString(ColumnName.receiver.toString()));
+                shareNote.setShareType(ShareNote.ShareType.valueOf(resultSet.getString(ColumnName.share_type.toString())));
                 //Thêm note vào list
                 shareNotes.add(shareNote);
             }
@@ -87,31 +70,31 @@ public class ShareNoteDAO implements BasicDAO<ShareNote, ShareNoteKey, ShareNote
     }
     
     @Override
-    public List<ShareNote> getAll(ShareNoteKey referKey) throws DAOException {
+    public List<ShareNote> getAll(DAOKey referKey) throws DAOException {
         List<ShareNote> shareNotes = new ArrayList<>();
         //Kiểm tra null
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "SELECT NOTEID, RECEIVER, SHARETYPE "
-                + "FROM sharenotes sh, users us, notes nt "
-                + "WHERE sh.RECEIVER = us.USERNAME AND NOTEID = nt.Id "
-                + "AND RECEIVER = ? ORDER BY NOTEID, RECEIVER, SHARETYPE";
+        String query = enableQueries.get(QueriesType.GET_ALL_REFER.toString());
+        Map<String, String> keyMap = referKey.getKeyMap();
+        if(!keyMap.containsKey(ColumnName.receiver.toString())) {
+            throw new DAOKeyException();
+        }
+        String receiver = keyMap.get(ColumnName.receiver.toString());
 
         try {
             //Set các tham số, thực thi truy vấn và lấy kết quả
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, referKey.getReceiver());
+            preparedStatement.setString(1, receiver);
             ResultSet resultSet = preparedStatement.executeQuery();
             //Duyệt các hàng kết quả
             while (resultSet.next()) {
                 ShareNote shareNote = new ShareNote();
-                int noteId = resultSet.getInt("NOTEID");
-                Note note = noteDataAccess.get(new NoteKey(noteId));
-                shareNote.setNote(note);
-                shareNote.setReceiver(resultSet.getString("RECEIVER"));
-                shareNote.setShareType(ShareNote.ShareType.valueOf(resultSet.getString("SHARETYPE")));
+                shareNote.setId(resultSet.getInt(ColumnName.note_id.toString()));
+                shareNote.setReceiver(resultSet.getString(ColumnName.receiver.toString()));
+                shareNote.setShareType(ShareNote.ShareType.valueOf(resultSet.getString(ColumnName.share_type.toString())));
                 //Thêm note vào list
                 shareNotes.add(shareNote);
             }
@@ -122,35 +105,39 @@ public class ShareNoteDAO implements BasicDAO<ShareNote, ShareNoteKey, ShareNote
     }
 
     @Override
-    public ShareNote get(ShareNoteKey key) throws DAOException {
+    public ShareNote get(DAOKey key) throws DAOException {
         ShareNote shareNote = new ShareNote();
         //Kiểm tra null
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "SELECT NOTEID, RECEIVER, SHARETYPE "
-                + "FROM sharenotes sh, users us, notes nt "
-                + "WHERE sh.RECEIVER = us.USERNAME AND NOTEID = nt.Id "
-                + "AND NOTEID = ? AND RECEIVER = ?";
+        String query = enableQueries.get(QueriesType.GET.toString());
+        Map<String, String> keyMap = key.getKeyMap();
+        if(!keyMap.containsKey(ColumnName.note_id.toString())) {
+            throw new DAOKeyException();
+        }
+        if(!keyMap.containsKey(ColumnName.receiver.toString())) {
+            throw new DAOKeyException();
+        }
+        int noteId = Integer.parseInt(keyMap.get(ColumnName.note_id.toString()));
+        String receiver = keyMap.get(ColumnName.receiver.toString());
 
         try {
             //Set tham số và thực thi truy vấn
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setInt(1, key.getNoteId());
-            preparedStatement.setString(2, key.getReceiver());
+            preparedStatement.setInt(1, noteId);
+            preparedStatement.setString(2, receiver);
 
             ResultSet resultSet = preparedStatement.executeQuery();
 
             while (resultSet.next()) {                
-                int noteId = resultSet.getInt("NOTEID");
-                Note note = noteDataAccess.get(new NoteKey(noteId));
-                shareNote.setNote(note);
-                shareNote.setReceiver(resultSet.getString("RECEIVER"));
-                shareNote.setShareType(ShareNote.ShareType.valueOf(resultSet.getString("SHARETYPE")));
+                shareNote.setId(resultSet.getInt(ColumnName.note_id.toString()));
+                shareNote.setReceiver(resultSet.getString(ColumnName.receiver.toString()));
+                shareNote.setShareType(ShareNote.ShareType.valueOf(resultSet.getString(ColumnName.share_type.toString())));
             }
             if(shareNote.isDefaultValue()) {
-                throw new NotExistDataException("This sharenote is not exist!");
+                throw new NotExistDataException();
             }
             return shareNote;
         } catch (SQLException ex) {
@@ -159,39 +146,31 @@ public class ShareNoteDAO implements BasicDAO<ShareNote, ShareNoteKey, ShareNote
     }
 
     @Override
-    public ShareNote add(ShareNote shareNote) throws DAOException {
+    public ShareNote create(ShareNote newShareNote) throws DAOException {
         //Kiểm tra null
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "INSERT INTO SHARENOTES(NOTEID, RECEIVER, SHARETYPE)"
-                + "VALUES(?, ?, ?)";
+        String query = enableQueries.get(QueriesType.CREATE.toString());
         
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setInt(1, shareNote.getId());
-            preparedStatement.setString(2, shareNote.getReceiver());
-            preparedStatement.setString(3, shareNote.getShareType().toString());
-            if(shareNote.getShareType() == ShareNote.ShareType.CAN_EDIT) {
-                for(NoteBlock block: shareNote.getBlocks()) {
-                    block.setEditor(shareNote.getReceiver());
-                    blockDataAccess.add(block, 
-                            new NoteBlockKey(shareNote.getId(), block.getOrd(), block.getHeader(), block.getEditor()));
-                }
-            }
+            preparedStatement.setInt(1, newShareNote.getId());
+            preparedStatement.setString(2, newShareNote.getReceiver());
+            preparedStatement.setString(3, newShareNote.getShareType().toString());
             if(preparedStatement.executeUpdate() <= 0) {
                 throw new FailedExecuteException();
             }
-            return shareNote;
+            return newShareNote;
         } catch (SQLException ex) {
             throw new FailedExecuteException();
         }
     }
     
     @Override
-    public ShareNote add(ShareNote shareNote, ShareNoteKey key) throws DAOException {
-        return this.add(shareNote);
+    public ShareNote create(ShareNote newShareNote, DAOKey key) throws DAOException {
+        return this.create(newShareNote);
     }
 
     @Override
@@ -201,8 +180,7 @@ public class ShareNoteDAO implements BasicDAO<ShareNote, ShareNoteKey, ShareNote
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "UPDATE SHARENOTES SET SHARETYPE = ? "
-                + "WHERE NOTEID = ? AND RECEIVER = ?";
+        String query = enableQueries.get(QueriesType.UPDATE.toString());
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -219,24 +197,33 @@ public class ShareNoteDAO implements BasicDAO<ShareNote, ShareNoteKey, ShareNote
     }
     
     @Override
-    public void update(ShareNote shareNote, ShareNoteKey key) throws DAOException {
+    public void update(ShareNote shareNote, DAOKey key) throws DAOException {
         this.update(shareNote);
     }
 
     @Override
-    public void delete(ShareNoteKey key) throws DAOException {
+    public void delete(DAOKey key) throws DAOException {
         //Kiểm tra null
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "DELETE FROM SHARENOTES WHERE NOTEID = ? AND RECEIVER = ?";
+        String query = enableQueries.get(QueriesType.DELETE.toString());
+        Map<String, String> keyMap = key.getKeyMap();
+        if(!keyMap.containsKey(ColumnName.note_id.toString())) {
+            throw new DAOKeyException();
+        }
+        if(!keyMap.containsKey(ColumnName.receiver.toString())) {
+            throw new DAOKeyException();
+        }
+        int noteId = Integer.parseInt(keyMap.get(ColumnName.note_id.toString()));
+        String receiver = keyMap.get(ColumnName.receiver.toString());
 
         try {
             //Set tham số và thực thi truy vấn
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setInt(1, key.getNoteId());
-            preparedStatement.setString(2, key.getReceiver());
+            preparedStatement.setInt(1, noteId);
+            preparedStatement.setString(2, receiver);
 
             if(preparedStatement.executeUpdate() < 0) {
                 throw new FailedExecuteException();
@@ -247,18 +234,23 @@ public class ShareNoteDAO implements BasicDAO<ShareNote, ShareNoteKey, ShareNote
     }
     
     @Override
-    public void deleteAll(ShareNoteKey referKey) throws DAOException {
+    public void deleteAll(DAOKey referKey) throws DAOException {
         //Kiểm tra null
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "DELETE FROM SHARENOTES WHERE NOTEID = ?";
+        String query = enableQueries.get(QueriesType.DELETE_ALL.toString());
+        Map<String, String> keyMap = referKey.getKeyMap();
+        if(!keyMap.containsKey(ColumnName.note_id.toString())) {
+            throw new DAOKeyException();
+        }
+        int noteId = Integer.parseInt(keyMap.get(ColumnName.note_id.toString()));
 
         try {
             //Set tham số và thực thi truy vấn
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setInt(1, referKey.getNoteId());
+            preparedStatement.setInt(1, noteId);
 
             if(preparedStatement.executeUpdate() < 0) {
                 throw new FailedExecuteException();

@@ -1,18 +1,12 @@
 package com.noteapp.dao;
 
-import com.noteapp.model.NetworkProperty;
-import com.noteapp.model.datatransfer.Note;
-import com.noteapp.model.datatransfer.NoteBlock;
-import com.noteapp.model.datatransfer.NoteFilter;
-import com.noteapp.dao.connection.DatabaseConnection;
-import com.noteapp.dao.connection.MySQLDatabaseConnection;
-import java.sql.Connection;
-import java.sql.Date;
+import com.noteapp.model.Note;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Triển khai các phương thức thao tác dữ liệu với Note
@@ -20,27 +14,21 @@ import java.util.List;
  * @since 30/03/2024
  * @version 1.0
  */
-public class NoteDAO implements BasicDAO<Note, NoteKey, UserKey> {
-    private final Connection connection;
-    protected DatabaseConnection databaseConnection;
-    
-    protected BasicDAO<NoteBlock, NoteBlockKey, NoteKey> blockDataAccess;
-    protected BasicDAO<NoteFilter, NoteFilterKey, NoteKey> filterDataAccess;
+public class NoteDAO extends DAO<Note> {
+    protected static final String NOTE_QUERIES_FILE_NAME = "NoteQueries.sql";
+
+    protected static enum ColumnName {
+        note_id, author, header, last_modified_date; 
+    }
+
 
     /**
      * Khởi tạo và lấy connection tới Database
      */
     private NoteDAO() {
-        String host = NetworkProperty.DATABASE_HOST;
-        int port = NetworkProperty.DATABASE_PORT;
-        String dbName = NetworkProperty.DATABASE_NAME;
-        String username = NetworkProperty.DATABASE_USERNAME;
-        String password = NetworkProperty.DATABASE_PASSWORD;
-        databaseConnection = new MySQLDatabaseConnection
-            (host, port, dbName, username, password);
-        this.connection = databaseConnection.getConnection();
-        this.blockDataAccess = NoteBlockDAO.getInstance();
-        this.filterDataAccess = NoteFilterDAO.getInstance();
+        super.sqlFileName = NOTE_QUERIES_FILE_NAME;
+        super.initConnection();
+        super.initEnableQueries();
     }
 
     private static class SingletonHelper {
@@ -63,8 +51,8 @@ public class NoteDAO implements BasicDAO<Note, NoteKey, UserKey> {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "SELECT * FROM notes ORDER BY id, author, LASTMODIFIEDDATE";
-
+        String query = enableQueries.get(QueriesType.GET_ALL.toString());
+        
         try {
             //Set các tham số, thực thi truy vấn và lấy kết quả
             PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -74,13 +62,10 @@ public class NoteDAO implements BasicDAO<Note, NoteKey, UserKey> {
             while (resultSet.next()) {
                 Note note = new Note();
                 //Set dữ liệu từ hàng vào note
-                note.setId(resultSet.getInt("ID"));
-                note.setAuthor(resultSet.getString("AUTHOR"));
-                note.setHeader(resultSet.getString("HEADER"));
-                note.setLastModified(resultSet.getInt("LASTMODIFIED"));
-                note.setLastModifiedDate(Date.valueOf(resultSet.getString("LASTMODIFIEDDATE")));
-                note.setBlocks(blockDataAccess.getAll(new NoteKey(note.getId())));
-                note.setFilters(filterDataAccess.getAll(new NoteKey(note.getId())));
+                note.setId(resultSet.getInt(ColumnName.note_id.toString()));
+                note.setAuthor(resultSet.getString(ColumnName.author.toString()));
+                note.setHeader(resultSet.getString(ColumnName.header.toString()));
+                note.setLastModifiedDate(resultSet.getDate(ColumnName.last_modified_date.toString()));
                 //Thêm note vào list
                 notes.add(note);
             }
@@ -91,35 +76,34 @@ public class NoteDAO implements BasicDAO<Note, NoteKey, UserKey> {
     }
     
     @Override
-    public List<Note> getAll(UserKey referKey) throws DAOException {
+    public List<Note> getAll(DAOKey referKey) throws DAOException {
         List<Note> notes = new ArrayList<>();
         //Kiểm tra null
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "SELECT nt.ID, AUTHOR, HEADER, LASTMODIFIED, LASTMODIFIEDDATE "
-                + "FROM notes nt, users us "
-                + "WHERE AUTHOR = us.USERNAME AND us.USERNAME = ? "
-                + "ORDER BY LASTMODIFIED, LASTMODIFIEDDATE, nt.id, author";
+        String query = enableQueries.get(QueriesType.GET_ALL_REFER.toString());
+        Map<String, String> keyMap = referKey.getKeyMap();
+        if(!keyMap.containsKey(ColumnName.author.toString())) {
+            throw new DAOKeyException();
+        }
+        String author = keyMap.get(ColumnName.author.toString());
 
         try {
             //Set các tham số, thực thi truy vấn và lấy kết quả
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, referKey.getUsername());
+            preparedStatement.setString(1, author);
             
             ResultSet resultSet = preparedStatement.executeQuery();
             //Duyệt các hàng kết quả
             while (resultSet.next()) {
                 Note note = new Note();
                 //Set dữ liệu từ hàng vào note
-                note.setId(resultSet.getInt("ID"));
-                note.setAuthor(resultSet.getString("AUTHOR"));
-                note.setHeader(resultSet.getString("HEADER"));
-                note.setLastModified(resultSet.getInt("LASTMODIFIED"));
-                note.setLastModifiedDate(Date.valueOf(resultSet.getString("LASTMODIFIEDDATE")));
-                note.setBlocks(blockDataAccess.getAll(new NoteKey(note.getId())));
-                note.setFilters(filterDataAccess.getAll(new NoteKey(note.getId())));
+                note.setId(resultSet.getInt(ColumnName.note_id.toString()));
+                note.setAuthor(resultSet.getString(ColumnName.author.toString()));
+                note.setHeader(resultSet.getString(ColumnName.header.toString()));
+                note.setLastModifiedDate(resultSet.getDate(ColumnName.last_modified_date.toString()));
                 //Thêm note vào list
                 notes.add(note);
             }
@@ -130,36 +114,36 @@ public class NoteDAO implements BasicDAO<Note, NoteKey, UserKey> {
     }
 
     @Override
-    public Note get(NoteKey key) throws DAOException {
+    public Note get(DAOKey key) throws DAOException {
         Note note = new Note();
         //Kiểm tra null
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "SELECT nt.ID, AUTHOR, HEADER, LASTMODIFIED, LASTMODIFIEDDATE "
-                + "FROM notes nt, users us "
-                + "WHERE AUTHOR = us.USERNAME AND nt.ID = ?";
+        String query = enableQueries.get(QueriesType.GET.toString());
+        Map<String, String> keyMap = key.getKeyMap();
+        if(!keyMap.containsKey(ColumnName.note_id.toString())) {
+            throw new DAOKeyException();
+        }
+        int noteId = Integer.parseInt(keyMap.get(ColumnName.note_id.toString()));
 
         try {
             //Set các tham số, thực thi truy vấn và lấy kết quả
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setInt(1, key.getId());
+            preparedStatement.setInt(1, noteId);
 
             ResultSet resultSet = preparedStatement.executeQuery();
 
             while (resultSet.next()) {
                 //Set dữ liệu từ kết quả vào note
-                note.setId(resultSet.getInt("ID"));
-                note.setAuthor(resultSet.getString("AUTHOR"));
-                note.setHeader(resultSet.getString("HEADER"));
-                note.setLastModified(resultSet.getInt("LASTMODIFIED"));
-                note.setLastModifiedDate(Date.valueOf(resultSet.getString("LASTMODIFIEDDATE")));
-                note.setBlocks(blockDataAccess.getAll(new NoteKey(note.getId())));
-                note.setFilters(filterDataAccess.getAll(new NoteKey(note.getId())));
+                note.setId(resultSet.getInt(ColumnName.note_id.toString()));
+                note.setAuthor(resultSet.getString(ColumnName.author.toString()));
+                note.setHeader(resultSet.getString(ColumnName.header.toString()));
+                note.setLastModifiedDate(resultSet.getDate(ColumnName.last_modified_date.toString()));
             }
             if(note.isDefaultValue()) {
-                throw new NotExistDataException("This note is not exist!");
+                throw new NotExistDataException();
             }
             return note;
         } catch (SQLException ex) {
@@ -168,46 +152,36 @@ public class NoteDAO implements BasicDAO<Note, NoteKey, UserKey> {
     }
 
     @Override
-    public Note add(Note note) throws DAOException {
+    public Note create(Note newNote) throws DAOException {
         //Kiểm tra null
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "INSERT INTO NOTES(ID, AUTHOR, HEADER, LASTMODIFIED, " +
-            "LASTMODIFIEDDATE) VALUES(?,?,?,?,?)";
+        String query = enableQueries.get(QueriesType.CREATE.toString());
 
         try {
             //Set tham số và thực thi truy vấn
             PreparedStatement preparedStatement = connection.prepareStatement(query, 
-                    PreparedStatement.RETURN_GENERATED_KEYS);            
-            preparedStatement.setInt(1, note.getId());
-            preparedStatement.setString(2, note.getAuthor());
-            preparedStatement.setString(3, note.getHeader());
-            preparedStatement.setInt(4, note.getLastModified());
-            preparedStatement.setDate(5, note.getLastModifiedDate());
-            //Kiểm tra có add các thông tin vừa rồi được ko, nếu có thì add filter
-            for(NoteBlock block: note.getBlocks()) {
-                blockDataAccess.add(block, 
-                        new NoteBlockKey(note.getId(), block.getOrd(), block.getHeader(), block.getEditor()));
-            }
-            for(NoteFilter filter: note.getFilters()) {
-                filterDataAccess.add(filter, new NoteFilterKey(note.getId(), filter.getFilterContent()));
-            }
+                    PreparedStatement.RETURN_GENERATED_KEYS);   
+            preparedStatement.setString(1, newNote.getAuthor());
+            preparedStatement.setString(2, newNote.getHeader());
+            preparedStatement.setDate(3, newNote.getLastModifiedDate());
+            
             if(preparedStatement.executeUpdate() <= 0) {
                 throw new FailedExecuteException();
             }
             ResultSet resultSet = preparedStatement.getGeneratedKeys();
-            note.setId(resultSet.getInt(1));
-            return note;
+            newNote.setId(resultSet.getInt(1));
+            return newNote;
         } catch (SQLException ex) {
             throw new FailedExecuteException();
         }
     }
     
     @Override
-    public Note add(Note note, NoteKey key) throws DAOException {
-        return this.add(note);
+    public Note create(Note newNote, DAOKey key) throws DAOException {
+        return this.create(newNote);
     }
 
     @Override
@@ -217,26 +191,15 @@ public class NoteDAO implements BasicDAO<Note, NoteKey, UserKey> {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "UPDATE NOTES SET AUTHOR = ?, HEADER = ?, LASTMODIFIED = ?, " +
-            "LASTMODIFIEDDATE = ? WHERE ID = ?";
+        String query = enableQueries.get(QueriesType.UPDATE.toString());
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(query);            
             preparedStatement.setString(1, note.getAuthor());
             preparedStatement.setString(2, note.getHeader());
-            preparedStatement.setInt(3, note.getLastModified());
-            preparedStatement.setDate(4, note.getLastModifiedDate());
-            preparedStatement.setInt(5, note.getId());
-            //Kiểm tra có add các thông tin vừa rồi được ko, nếu có thì add filter
-            blockDataAccess.deleteAll(new NoteKey(note.getId()));
-            for(NoteBlock block: note.getBlocks()) {
-                blockDataAccess.add(block, 
-                        new NoteBlockKey(note.getId(), block.getOrd(), block.getHeader(), block.getEditor()));
-            }
-            filterDataAccess.deleteAll(new NoteKey(note.getId()));
-            for(NoteFilter filter: note.getFilters()) {
-                filterDataAccess.add(filter, new NoteFilterKey(note.getId(), filter.getFilterContent()));
-            }
+            preparedStatement.setDate(3, note.getLastModifiedDate());
+            preparedStatement.setInt(4, note.getId());
+            
             if(preparedStatement.executeUpdate() <= 0) {
                 throw new FailedExecuteException();
             }
@@ -246,27 +209,29 @@ public class NoteDAO implements BasicDAO<Note, NoteKey, UserKey> {
     }
     
     @Override
-    public void update(Note note, NoteKey key) throws DAOException {
+    public void update(Note note, DAOKey key) throws DAOException {
         this.update(note);
     }
     
     @Override
-    public void delete(NoteKey key) throws DAOException {
+    public void delete(DAOKey key) throws DAOException {
         //Kiểm tra null
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "DELETE FROM NOTES WHERE ID = ?";
+        String query = enableQueries.get(QueriesType.DELETE.toString());
+        Map<String, String> keyMap = key.getKeyMap();
+        if(!keyMap.containsKey(ColumnName.note_id.toString())) {
+            throw new DAOKeyException();
+        }
+        int noteId = Integer.parseInt(keyMap.get(ColumnName.note_id.toString()));
 
         try {
             //Set tham số và thực thi truy vấn
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setInt(1, key.getId());
-            //Xóa các filter
-            filterDataAccess.deleteAll(key);
+            preparedStatement.setInt(1, noteId);
             
-            blockDataAccess.deleteAll(key);
             if(preparedStatement.executeUpdate() < 0) {
                 throw new FailedExecuteException();
             }
@@ -276,23 +241,24 @@ public class NoteDAO implements BasicDAO<Note, NoteKey, UserKey> {
     }
     
     @Override
-    public void deleteAll(UserKey referKey) throws DAOException {
+    public void deleteAll(DAOKey referKey) throws DAOException {
         //Kiểm tra null
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "DELETE FROM NOTES WHERE AUTHOR = ?";
+        String query = enableQueries.get(QueriesType.DELETE_ALL.toString());
+        Map<String, String> keyMap = referKey.getKeyMap();
+        if(!keyMap.containsKey(ColumnName.author.toString())) {
+            throw new DAOKeyException();
+        }
+        String author = keyMap.get(ColumnName.author.toString());
 
         try {
             //Set tham số và thực thi truy vấn
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, referKey.getUsername());
+            preparedStatement.setString(1, author);
             //Xóa các filter của các Note tương ứng
-            for(Note note: this.getAll(referKey)) {
-                filterDataAccess.deleteAll(new NoteKey(note.getId()));
-                blockDataAccess.deleteAll(new NoteKey(note.getId()));
-            }
             
             if(preparedStatement.executeUpdate() < 0) {
                 throw new FailedExecuteException();

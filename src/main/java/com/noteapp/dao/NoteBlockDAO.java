@@ -1,37 +1,33 @@
 package com.noteapp.dao;
 
-import com.noteapp.model.NetworkProperty;
-import com.noteapp.model.datatransfer.NoteBlock;
-import com.noteapp.dao.connection.DatabaseConnection;
-import com.noteapp.dao.connection.MySQLDatabaseConnection;
-import java.sql.Connection;
+import com.noteapp.model.NoteBlock;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
  * @author admin
  */
 
-public class NoteBlockDAO implements BasicDAO<NoteBlock, NoteBlockKey, NoteKey>{
-    private final Connection connection;
-    protected DatabaseConnection databaseConnection;
+public class NoteBlockDAO extends DAO<NoteBlock>{
+    protected static final String NOTE_BLOCKS_QUERIES_FILE_NAME = "NoteBlockQueries.sql";
+
+    protected static enum ColumnName {
+        block_id, note_id, header, block_type, block_order;
+    }
+
 
     /**
      * Khởi tạo và lấy connection tới Database
      */
     private NoteBlockDAO() {
-        String host = NetworkProperty.DATABASE_HOST;
-        int port = NetworkProperty.DATABASE_PORT;
-        String dbName = NetworkProperty.DATABASE_NAME;
-        String username = NetworkProperty.DATABASE_USERNAME;
-        String password = NetworkProperty.DATABASE_PASSWORD;
-        databaseConnection = new MySQLDatabaseConnection
-            (host, port, dbName, username, password);
-        this.connection = databaseConnection.getConnection();
+        super.sqlFileName = NOTE_BLOCKS_QUERIES_FILE_NAME;
+        super.initConnection();
+        super.initEnableQueries();
     }
 
     private static class SingletonHelper {
@@ -54,7 +50,7 @@ public class NoteBlockDAO implements BasicDAO<NoteBlock, NoteBlockKey, NoteKey>{
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "SELECT * FROM note_blocks ORDER BY noteid, blockord, header, editor";
+        String query = enableQueries.get(QueriesType.GET_ALL.toString());
 
         try {
             //Thực thi truy vấn SQL và lấy kết quả là một bộ dữ liệu
@@ -64,11 +60,10 @@ public class NoteBlockDAO implements BasicDAO<NoteBlock, NoteBlockKey, NoteKey>{
             while (resultSet.next()) {
                 NoteBlock noteBlock = new NoteBlock();
                 //Set dữ liệu cho noteBlock
-                noteBlock.setOrd(resultSet.getInt("BLOCKORD"));
-                noteBlock.setHeader(resultSet.getString("HEADER"));
-                noteBlock.setEditor(resultSet.getString("EDITOR"));
-                noteBlock.setContent(resultSet.getString("BLOCKCONTENT"));
-                noteBlock.setBlockType(NoteBlock.BlockType.valueOf(resultSet.getString("BLOCKTYPE")));
+                noteBlock.setId(resultSet.getInt(ColumnName.block_id.toString()));
+                noteBlock.setHeader(resultSet.getString(ColumnName.header.toString()));
+                noteBlock.setBlockType(NoteBlock.BlockType.valueOf(resultSet.getString(ColumnName.block_type.toString())));
+                noteBlock.setOrder(resultSet.getInt(ColumnName.block_order.toString()));
                 noteBlocks.add(noteBlock);
             }    
             //Nếu noteBlocks rỗng thì ném ngoại lệ là danh sách trống
@@ -79,32 +74,32 @@ public class NoteBlockDAO implements BasicDAO<NoteBlock, NoteBlockKey, NoteKey>{
     }
     
     @Override 
-    public List<NoteBlock> getAll(NoteKey referKey) throws DAOException {
+    public List<NoteBlock> getAll(DAOKey referKey) throws DAOException {
         List<NoteBlock> noteBlocks = new ArrayList<>();
         //Kiểm tra connection có phải null không
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "SELECT blockord, nb.header as header, editor, blockcontent, blocktype FROM "
-                + "note_blocks nb, notes nt "
-                + "WHERE nb.noteid = nt.id AND noteid = ? "
-                + "ORDER BY blockord, nb.header, editor";
-
+        String query = enableQueries.get(QueriesType.GET_ALL_REFER.toString());
+        Map<String, String> keyMap = referKey.getKeyMap();
+        if(!keyMap.containsKey(ColumnName.note_id.toString())) {
+            throw new DAOKeyException();
+        }
+        int noteId = Integer.parseInt(keyMap.get(ColumnName.note_id.toString()));
         try {
             //Thực thi truy vấn SQL và lấy kết quả là một bộ dữ liệu
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setInt(1, referKey.getId());
+            preparedStatement.setInt(1, noteId);
             ResultSet resultSet = preparedStatement.executeQuery();
             //Chuyển từng hàng dữ liệu sang noteBlock và thêm vào list
             while (resultSet.next()) {
                 NoteBlock noteBlock = new NoteBlock();
                 //Set dữ liệu cho noteBlock
-                noteBlock.setOrd(resultSet.getInt("BLOCKORD"));
-                noteBlock.setHeader(resultSet.getString("HEADER"));
-                noteBlock.setEditor(resultSet.getString("EDITOR"));
-                noteBlock.setContent(resultSet.getString("BLOCKCONTENT"));
-                noteBlock.setBlockType(NoteBlock.BlockType.valueOf(resultSet.getString("BLOCKTYPE")));
+                noteBlock.setId(resultSet.getInt(ColumnName.block_id.toString()));
+                noteBlock.setHeader(resultSet.getString(ColumnName.header.toString()));
+                noteBlock.setBlockType(NoteBlock.BlockType.valueOf(resultSet.getString(ColumnName.block_type.toString())));
+                noteBlock.setOrder(resultSet.getInt(ColumnName.block_order.toString()));
                 noteBlocks.add(noteBlock);
             }    
             //Nếu noteBlocks rỗng thì ném ngoại lệ là danh sách trống
@@ -115,38 +110,35 @@ public class NoteBlockDAO implements BasicDAO<NoteBlock, NoteBlockKey, NoteKey>{
     }
     
     @Override
-    public NoteBlock get(NoteBlockKey key) throws DAOException {
+    public NoteBlock get(DAOKey key) throws DAOException {
         NoteBlock noteBlock = new NoteBlock();
         //Kiểm tra connection có phải null không
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "SELECT blockord, nb.header as header, editor, blockcontent, blocktype FROM "
-                + "note_blocks nb, notes nt "
-                + "WHERE nb.noteid = nt.id AND noteid = ? AND blockid = ?"
-                + "AND nb.header = ? AND editor = ?";
-
+        String query = enableQueries.get(QueriesType.GET.toString());
+        Map<String, String> keyMap = key.getKeyMap();
+        if(!keyMap.containsKey(ColumnName.block_id.toString())) {
+            throw new DAOKeyException();
+        }
+        int blockId = Integer.parseInt(keyMap.get(ColumnName.block_id.toString()));
         try {
             //Thực thi truy vấn SQL và lấy kết quả là một bộ dữ liệu
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setInt(1, key.getNoteId());
-            preparedStatement.setInt(2, key.getBlockId());
-            preparedStatement.setString(3, key.getHeader());
-            preparedStatement.setString(4, key.getEditor());
+            preparedStatement.setInt(1, blockId);
             ResultSet resultSet = preparedStatement.executeQuery();
             //Chuyển từng hàng dữ liệu sang noteBlock và thêm vào list
             while (resultSet.next()) {
                 //Set dữ liệu cho noteBlock
-                noteBlock.setOrd(resultSet.getInt("BLOCKORD"));
-                noteBlock.setHeader(resultSet.getString("HEADER"));
-                noteBlock.setEditor(resultSet.getString("EDITOR"));
-                noteBlock.setContent(resultSet.getString("BLOCKCONTENT"));
-                noteBlock.setBlockType(NoteBlock.BlockType.valueOf(resultSet.getString("BLOCKTYPE")));
+                noteBlock.setId(resultSet.getInt(ColumnName.block_id.toString()));
+                noteBlock.setHeader(resultSet.getString(ColumnName.header.toString()));
+                noteBlock.setBlockType(NoteBlock.BlockType.valueOf(resultSet.getString(ColumnName.header.toString())));
+                noteBlock.setOrder(resultSet.getInt(ColumnName.block_order.toString()));
             }    
             //Nếu không tồn tại thì ném ngoại lệ
             if(noteBlock.isDefaultValue()) {
-                throw new NotExistDataException("Block is not exist!");
+                throw new NotExistDataException();
             }   
             return noteBlock;
         } catch (SQLException ex) {
@@ -155,61 +147,68 @@ public class NoteBlockDAO implements BasicDAO<NoteBlock, NoteBlockKey, NoteKey>{
     }
     
     @Override
-    public NoteBlock add(NoteBlock noteBlock) throws DAOException {
-        throw new FailedExecuteException();
+    public NoteBlock create(NoteBlock newNoteBlock) throws DAOException {
+        throw new UnsupportedQueryException();
     }
     
     @Override
-    public NoteBlock add(NoteBlock noteBlock, NoteBlockKey key) throws DAOException {
+    public NoteBlock create(NoteBlock newNoteBlock, DAOKey key) throws DAOException {
         //Kiểm tra null
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "INSERT INTO note_blocks(noteid, blockord, header, "
-                + "editor, blockcontent, blocktype) "
-                + "VALUES(?,?,?,?,?,?)";
+        String query = enableQueries.get(QueriesType.CREATE_KEY.toString());
+        Map<String, String> keyMap = key.getKeyMap();
+        if(!keyMap.containsKey(ColumnName.note_id.toString())) {
+            throw new DAOKeyException();
+        }
+        int noteId = Integer.parseInt(keyMap.get(ColumnName.note_id.toString()));
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            PreparedStatement preparedStatement = connection.prepareStatement(query,
+                    PreparedStatement.RETURN_GENERATED_KEYS);
             //Set các tham số cho truy vấn
-            preparedStatement.setInt(1, key.getNoteId());
-            preparedStatement.setInt(2, key.getBlockId());
-            preparedStatement.setString(3, key.getHeader());
-            preparedStatement.setString(4, key.getEditor());
-            preparedStatement.setString(5, noteBlock.getContent());
-            preparedStatement.setString(6, noteBlock.getBlockType().toString());
+            preparedStatement.setInt(1, noteId);
+            preparedStatement.setString(2, newNoteBlock.getHeader());
+            preparedStatement.setString(3, newNoteBlock.getBlockType().toString());
+            preparedStatement.setInt(4, newNoteBlock.getOrder());
             
             if(preparedStatement.executeUpdate() <= 0) {
                 throw new FailedExecuteException();
             }
-            return noteBlock;
+            ResultSet resultSet = preparedStatement.getGeneratedKeys();
+            newNoteBlock.setId(resultSet.getInt(1));
+            return newNoteBlock;
         } catch (SQLException ex) {
             throw new FailedExecuteException();
         }
     }
     @Override
     public void update(NoteBlock noteBlock) throws DAOException {
-        throw new FailedExecuteException();
+        throw new UnsupportedQueryException();
     }
     
     @Override
-    public void update(NoteBlock noteBlock, NoteBlockKey key) throws DAOException {
+    public void update(NoteBlock noteBlock, DAOKey key) throws DAOException {
         //Kiểm tra null
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "UPDATE note_blocks SET blockcontent=?, blocktype = ?"
-                + "WHERE noteid = ? AND blockid = ? AND header = ? AND editor = ?";
+        String query = enableQueries.get(QueriesType.UPDATE_KEY.toString());
+        Map<String, String> keyMap = key.getKeyMap();
+        if(!keyMap.containsKey(ColumnName.note_id.toString())) {
+            throw new DAOKeyException();
+        }
+        int noteId = Integer.parseInt(keyMap.get(ColumnName.note_id.toString()));
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             //Set các tham số cho truy vấn 
-            preparedStatement.setString(1, noteBlock.getContent());
-            preparedStatement.setString(2, noteBlock.getBlockType().toString());
-            preparedStatement.setInt(3, key.getNoteId());
-            preparedStatement.setInt(4, key.getBlockId());
-            preparedStatement.setString(5, key.getHeader());
-            preparedStatement.setString(6, key.getEditor());
+            preparedStatement.setInt(1, noteId);
+            preparedStatement.setString(2, noteBlock.getHeader());
+            preparedStatement.setString(3, noteBlock.getBlockType().toString());
+            preparedStatement.setInt(4, noteBlock.getOrder());
+            preparedStatement.setInt(5, noteBlock.getId());
             if(preparedStatement.executeUpdate() <= 0) {
                 throw new FailedExecuteException();
             }
@@ -219,22 +218,23 @@ public class NoteBlockDAO implements BasicDAO<NoteBlock, NoteBlockKey, NoteKey>{
     }
     
     @Override
-    public void delete(NoteBlockKey key) throws DAOException {
+    public void delete(DAOKey key) throws DAOException {
         //Kiểm tra null
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "DELETE FROM note_blocks "
-                + "WHERE noteid = ? AND blockid = ? AND header = ? AND editor = ?";
+        String query = enableQueries.get(QueriesType.DELETE.toString());
+        Map<String, String> keyMap = key.getKeyMap();
+        if(!keyMap.containsKey(ColumnName.block_id.toString())) {
+            throw new DAOKeyException();
+        }
+        int blockId = Integer.parseInt(keyMap.get(ColumnName.block_id.toString()));
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             //Set các tham số cho truy vấn
-            preparedStatement.setInt(1, key.getNoteId());
-            preparedStatement.setInt(2, key.getBlockId());
-            preparedStatement.setString(3, key.getHeader());
-            preparedStatement.setString(4, key.getEditor());
+            preparedStatement.setInt(1, blockId);
 
             if(preparedStatement.executeUpdate() < 0) {
                 throw new FailedExecuteException();
@@ -245,18 +245,23 @@ public class NoteBlockDAO implements BasicDAO<NoteBlock, NoteBlockKey, NoteKey>{
     }
     
     @Override
-    public void deleteAll(NoteKey referKey) throws DAOException {
+    public void deleteAll(DAOKey referKey) throws DAOException {
         //Kiểm tra null
         if(connection == null) {
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = "DELETE FROM note_blocks WHERE noteid = ?";
+        String query = enableQueries.get(QueriesType.DELETE.toString());
+        Map<String, String> keyMap = referKey.getKeyMap();
+        if(!keyMap.containsKey(ColumnName.note_id.toString())) {
+            throw new DAOKeyException();
+        }
+        int noteId = Integer.parseInt(keyMap.get(ColumnName.note_id.toString()));
 
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             //Set các tham số cho truy vấn
-            preparedStatement.setInt(1, referKey.getId());
+            preparedStatement.setInt(1, noteId);
 
             if(preparedStatement.executeUpdate() < 0) {
                 throw new FailedExecuteException();
