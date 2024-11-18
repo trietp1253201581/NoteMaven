@@ -9,6 +9,4 @@ module com.noteapp {
     
     opens com.noteapp to javafx.fxml;
     exports com.noteapp;
-    
-
 }

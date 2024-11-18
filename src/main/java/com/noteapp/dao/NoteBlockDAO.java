@@ -133,7 +133,7 @@ public class NoteBlockDAO extends DAO<NoteBlock>{
                 //Set dữ liệu cho noteBlock
                 noteBlock.setId(resultSet.getInt(ColumnName.block_id.toString()));
                 noteBlock.setHeader(resultSet.getString(ColumnName.header.toString()));
-                noteBlock.setBlockType(NoteBlock.BlockType.valueOf(resultSet.getString(ColumnName.header.toString())));
+                noteBlock.setBlockType(NoteBlock.BlockType.valueOf(resultSet.getString(ColumnName.block_type.toString())));
                 noteBlock.setOrder(resultSet.getInt(ColumnName.block_order.toString()));
             }    
             //Nếu không tồn tại thì ném ngoại lệ
@@ -177,9 +177,12 @@ public class NoteBlockDAO extends DAO<NoteBlock>{
                 throw new FailedExecuteException();
             }
             ResultSet resultSet = preparedStatement.getGeneratedKeys();
-            newNoteBlock.setId(resultSet.getInt(1));
+            while(resultSet.next()) {
+                newNoteBlock.setId(resultSet.getInt(1));
+            }
             return newNoteBlock;
         } catch (SQLException ex) {
+            ex.printStackTrace();
             throw new FailedExecuteException();
         }
     }
@@ -251,7 +254,7 @@ public class NoteBlockDAO extends DAO<NoteBlock>{
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = enableQueries.get(QueriesType.DELETE.toString());
+        String query = enableQueries.get(QueriesType.DELETE_ALL.toString());
         Map<String, String> keyMap = referKey.getKeyMap();
         if(!keyMap.containsKey(ColumnName.note_id.toString())) {
             throw new DAOKeyException();

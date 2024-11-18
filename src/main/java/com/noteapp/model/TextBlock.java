@@ -34,7 +34,6 @@ public class TextBlock extends NoteBlock {
     public void setNoteBlock(NoteBlock noteBlock) {
         super.setId(noteBlock.getId());
         super.setHeader(noteBlock.getHeader());
-        super.setEditor(noteBlock.getEditor());
         super.setBlockType(noteBlock.getBlockType());
         super.setOrder(noteBlock.getOrder());
     }

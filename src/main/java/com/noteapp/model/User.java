@@ -5,9 +5,8 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 /**
- * Một transfer cho dữ liệu của các user
- * @author Nhóm 23
- * @since 30/03/2024
+ * Một transfer cho dữ liệu của các user 
+ * @author admin
  * @version 1.0
  */
 public class User extends DTO {
@@ -20,15 +19,12 @@ public class User extends DTO {
     private Email email;
     
     /**
-     * Các giới tính
+     * Các giới tính có thể có của User
      */
     public static enum Gender {
         MALE, FEMALE, OTHER;
     }
 
-    /**
-     * Constructor và cài đặt dữ liệu default cho User
-     */
     public User() {
         this.name = "";
         this.username = "";
@@ -36,15 +32,27 @@ public class User extends DTO {
         this.birthday = Date.valueOf(LocalDate.MIN);
         this.school = "";
         this.gender = Gender.MALE;
+        this.email = new Email();
     }
 
-    public User(int id, String name, String username, String password, Date birthday, String school, Gender gender) {
+    public User(String username, String password, Email email) {
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.name = "";
+        this.birthday = Date.valueOf(LocalDate.MIN);
+        this.school = "";
+        this.gender = Gender.MALE;
+    }
+
+    public User(String name, String username, String password, Date birthday, String school, Gender gender, Email email) {
         this.name = name;
         this.username = username;
         this.password = password;
         this.birthday = birthday;
         this.school = school;
         this.gender = gender;
+        this.email = email;
     }
 
     public String getName() {
@@ -103,10 +111,6 @@ public class User extends DTO {
         this.email = email;
     }
     
-    /**
-     * Kiểm tra xem một thể hiện User có mang giá trị default không
-     * @return (1) {@code true} nếu đây là default User, (2) {@code false} nếu ngược lại
-     */
     public boolean isDefaultValue() {
         return "".equals(username);
     }
@@ -114,16 +118,18 @@ public class User extends DTO {
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 41 * hash + Objects.hashCode(this.name);
-        hash = 41 * hash + Objects.hashCode(this.username);
-        hash = 41 * hash + Objects.hashCode(this.password);
-        hash = 41 * hash + Objects.hashCode(this.birthday);
-        hash = 41 * hash + Objects.hashCode(this.school);
-        hash = 41 * hash + Objects.hashCode(this.gender);
-        hash = 41 * hash + Objects.hashCode(this.email);
+        hash = 19 * hash + Objects.hashCode(this.username);
         return hash;
     }
-
+    
+    /**
+     * So sánh một {@link Object} với {@link User} này.
+     * @param obj Object cần so sánh
+     * @return {@code true} nếu obj là một thể hiện của User
+     * và thuộc tính {@code username} của obj bằng với
+     * {@code username} của User
+     * @see hashCode()
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -132,34 +138,23 @@ public class User extends DTO {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (!(obj instanceof User)) {
             return false;
         }
         final User other = (User) obj;
-        if (!Objects.equals(this.name, other.name)) {
-            return false;
-        }
-        if (!Objects.equals(this.username, other.username)) {
-            return false;
-        }
-        if (!Objects.equals(this.password, other.password)) {
-            return false;
-        }
-        if (!Objects.equals(this.school, other.school)) {
-            return false;
-        }
-        if (!Objects.equals(this.birthday, other.birthday)) {
-            return false;
-        }
-        if (this.gender != other.gender) {
-            return false;
-        }
-        return Objects.equals(this.email, other.email);
+        return !Objects.equals(this.username, other.username);
     }
 
     @Override
     public String toString() {
-        return "User{" + "name=" + name + ", username=" + username + ", password=" + password + ", birthday=" + birthday + ", school=" + school + ", gender=" + gender + ", email=" + email + '}';
+        return "User{" + 
+                "name=" + name + 
+                ", username=" + username + 
+                ", password=" + password + 
+                ", birthday=" + birthday + 
+                ", school=" + school + 
+                ", gender=" + gender + 
+                ", email=" + email + 
+                '}';
     }
-
 }

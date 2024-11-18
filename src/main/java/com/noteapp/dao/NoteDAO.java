@@ -172,7 +172,9 @@ public class NoteDAO extends DAO<Note> {
                 throw new FailedExecuteException();
             }
             ResultSet resultSet = preparedStatement.getGeneratedKeys();
-            newNote.setId(resultSet.getInt(1));
+            while(resultSet.next()) {
+                newNote.setId(resultSet.getInt(1));
+            }
             return newNote;
         } catch (SQLException ex) {
             throw new FailedExecuteException();

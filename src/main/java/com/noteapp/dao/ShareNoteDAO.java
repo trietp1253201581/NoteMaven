@@ -18,7 +18,7 @@ public class ShareNoteDAO extends DAO<ShareNote> {
     protected static final String SHARE_NOTE_QUERIES_FILE_NAME = "ShareNoteQueries.sql";
 
     protected static enum ColumnName {
-        note_id, receiver, share_type; 
+        note_id, editor, share_type; 
     }
 
     private ShareNoteDAO() {
@@ -58,7 +58,7 @@ public class ShareNoteDAO extends DAO<ShareNote> {
             while (resultSet.next()) {
                 ShareNote shareNote = new ShareNote();
                 shareNote.setId(resultSet.getInt(ColumnName.note_id.toString()));
-                shareNote.setReceiver(resultSet.getString(ColumnName.receiver.toString()));
+                shareNote.setEditor(resultSet.getString(ColumnName.editor.toString()));
                 shareNote.setShareType(ShareNote.ShareType.valueOf(resultSet.getString(ColumnName.share_type.toString())));
                 //Thêm note vào list
                 shareNotes.add(shareNote);
@@ -79,21 +79,21 @@ public class ShareNoteDAO extends DAO<ShareNote> {
         //Câu truy vấn SQL
         String query = enableQueries.get(QueriesType.GET_ALL_REFER.toString());
         Map<String, String> keyMap = referKey.getKeyMap();
-        if(!keyMap.containsKey(ColumnName.receiver.toString())) {
+        if(!keyMap.containsKey(ColumnName.editor.toString())) {
             throw new DAOKeyException();
         }
-        String receiver = keyMap.get(ColumnName.receiver.toString());
+        String editor = keyMap.get(ColumnName.editor.toString());
 
         try {
             //Set các tham số, thực thi truy vấn và lấy kết quả
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, receiver);
+            preparedStatement.setString(1, editor);
             ResultSet resultSet = preparedStatement.executeQuery();
             //Duyệt các hàng kết quả
             while (resultSet.next()) {
                 ShareNote shareNote = new ShareNote();
                 shareNote.setId(resultSet.getInt(ColumnName.note_id.toString()));
-                shareNote.setReceiver(resultSet.getString(ColumnName.receiver.toString()));
+                shareNote.setEditor(resultSet.getString(ColumnName.editor.toString()));
                 shareNote.setShareType(ShareNote.ShareType.valueOf(resultSet.getString(ColumnName.share_type.toString())));
                 //Thêm note vào list
                 shareNotes.add(shareNote);
@@ -117,23 +117,23 @@ public class ShareNoteDAO extends DAO<ShareNote> {
         if(!keyMap.containsKey(ColumnName.note_id.toString())) {
             throw new DAOKeyException();
         }
-        if(!keyMap.containsKey(ColumnName.receiver.toString())) {
+        if(!keyMap.containsKey(ColumnName.editor.toString())) {
             throw new DAOKeyException();
         }
         int noteId = Integer.parseInt(keyMap.get(ColumnName.note_id.toString()));
-        String receiver = keyMap.get(ColumnName.receiver.toString());
+        String editor = keyMap.get(ColumnName.editor.toString());
 
         try {
             //Set tham số và thực thi truy vấn
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setInt(1, noteId);
-            preparedStatement.setString(2, receiver);
+            preparedStatement.setString(2, editor);
 
             ResultSet resultSet = preparedStatement.executeQuery();
 
             while (resultSet.next()) {                
                 shareNote.setId(resultSet.getInt(ColumnName.note_id.toString()));
-                shareNote.setReceiver(resultSet.getString(ColumnName.receiver.toString()));
+                shareNote.setEditor(resultSet.getString(ColumnName.editor.toString()));
                 shareNote.setShareType(ShareNote.ShareType.valueOf(resultSet.getString(ColumnName.share_type.toString())));
             }
             if(shareNote.isDefaultValue()) {
@@ -157,7 +157,7 @@ public class ShareNoteDAO extends DAO<ShareNote> {
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setInt(1, newShareNote.getId());
-            preparedStatement.setString(2, newShareNote.getReceiver());
+            preparedStatement.setString(2, newShareNote.getEditor());
             preparedStatement.setString(3, newShareNote.getShareType().toString());
             if(preparedStatement.executeUpdate() <= 0) {
                 throw new FailedExecuteException();
@@ -186,7 +186,7 @@ public class ShareNoteDAO extends DAO<ShareNote> {
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setString(1, shareNote.getShareType().toString());
             preparedStatement.setInt(2, shareNote.getId());
-            preparedStatement.setString(3, shareNote.getReceiver());
+            preparedStatement.setString(3, shareNote.getEditor());
 
             if(preparedStatement.executeUpdate() <= 0) {
                 throw new FailedExecuteException();
@@ -213,17 +213,17 @@ public class ShareNoteDAO extends DAO<ShareNote> {
         if(!keyMap.containsKey(ColumnName.note_id.toString())) {
             throw new DAOKeyException();
         }
-        if(!keyMap.containsKey(ColumnName.receiver.toString())) {
+        if(!keyMap.containsKey(ColumnName.editor.toString())) {
             throw new DAOKeyException();
         }
         int noteId = Integer.parseInt(keyMap.get(ColumnName.note_id.toString()));
-        String receiver = keyMap.get(ColumnName.receiver.toString());
+        String editor = keyMap.get(ColumnName.editor.toString());
 
         try {
             //Set tham số và thực thi truy vấn
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             preparedStatement.setInt(1, noteId);
-            preparedStatement.setString(2, receiver);
+            preparedStatement.setString(2, editor);
 
             if(preparedStatement.executeUpdate() < 0) {
                 throw new FailedExecuteException();

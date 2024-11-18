@@ -13,7 +13,7 @@ import java.util.Map;
  * @author admin
  */
 public class NoteFilterDAO extends DAO<NoteFilter>{
-    protected static final String NOTE_FILTERS_QUERIES_FILE_NAME = "NoteFiltersQueries.sql";
+    protected static final String NOTE_FILTERS_QUERIES_FILE_NAME = "NoteFilterQueries.sql";
 
     protected static enum ColumnName {
         note_id, filter;
@@ -221,7 +221,7 @@ public class NoteFilterDAO extends DAO<NoteFilter>{
             throw new FailedExecuteException();
         }
         //Câu truy vấn SQL
-        String query = enableQueries.get(QueriesType.GET_ALL_REFER.toString());
+        String query = enableQueries.get(QueriesType.DELETE_ALL.toString());
         Map<String, String> keyMap = referKey.getKeyMap();
         if(!keyMap.containsKey(ColumnName.note_id.toString())) {
             throw new DAOKeyException();

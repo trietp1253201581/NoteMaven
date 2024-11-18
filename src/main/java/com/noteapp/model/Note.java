@@ -4,7 +4,6 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Một transfer cho dữ liệu của các note
@@ -19,14 +18,20 @@ public class Note extends DTO {
     private List<NoteBlock> blocks;
     private Date lastModifiedDate;
     private List<NoteFilter> filters;
-    
-    /**
-     * Constructor và cài đặt dữ liệu default cho Note
-     */
+
     public Note() {
         this.id = -1;
         this.author = "";
         this.header = "";
+        this.blocks = new ArrayList<>();
+        this.lastModifiedDate = Date.valueOf(LocalDate.MIN);
+        this.filters = new ArrayList<>();
+    }
+
+    public Note(String author, String header) {
+        this.id = -1;
+        this.author = author;
+        this.header = header;
         this.blocks = new ArrayList<>();
         this.lastModifiedDate = Date.valueOf(LocalDate.MIN);
         this.filters = new ArrayList<>();
@@ -89,26 +94,25 @@ public class Note extends DTO {
         this.filters = filters;
     }
     
-    /**
-     * Kiểm tra xem một thể hiện Note có mang giá trị default không
-     * @return (1) {@code true} nếu đây là default Note, (2) {@code false} nếu ngược lại
-     */
     public boolean isDefaultValue() {
         return id == -1;
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 73 * hash + this.id;
-        hash = 73 * hash + Objects.hashCode(this.author);
-        hash = 73 * hash + Objects.hashCode(this.header);
-        hash = 73 * hash + Objects.hashCode(this.blocks);
-        hash = 73 * hash + Objects.hashCode(this.lastModifiedDate);
-        hash = 73 * hash + Objects.hashCode(this.filters);
+        int hash = 3;
+        hash = 37 * hash + this.id;
         return hash;
     }
-
+    
+    /**
+     * So sánh một {@link Object} với {@link Note} này.
+     * @param obj Object cần so sánh
+     * @return {@code true} nếu obj là một thể hiện của Note
+     * và thuộc tính {@code noteId} của obj bằng với
+     * {@code noteId} của Note
+     * @see hashCode()
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -117,30 +121,22 @@ public class Note extends DTO {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (!(obj instanceof Note)) {
             return false;
         }
         final Note other = (Note) obj;
-        if (this.id != other.id) {
-            return false;
-        }
-        if (!Objects.equals(this.author, other.author)) {
-            return false;
-        }
-        if (!Objects.equals(this.header, other.header)) {
-            return false;
-        }
-        if (!Objects.equals(this.blocks, other.blocks)) {
-            return false;
-        }
-        if (!Objects.equals(this.lastModifiedDate, other.lastModifiedDate)) {
-            return false;
-        }
-        return Objects.equals(this.filters, other.filters);
+        return this.id == other.id;
     }
 
     @Override
     public String toString() {
-        return "Note{" + "id=" + id + ", author=" + author + ", header=" + header + ", blocks=" + blocks + ", lastModifiedDate=" + lastModifiedDate + ", filters=" + filters + '}';
+        return "Note{" + 
+                "id=" + id + 
+                ", author=" + author + 
+                ", header=" + header + 
+                ", blocks=" + blocks + 
+                ", lastModifiedDate=" + lastModifiedDate + 
+                ", filters=" + filters + 
+                '}';
     }
 }

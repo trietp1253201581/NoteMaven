@@ -83,15 +83,20 @@ public class NoteBlock extends DTO {
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 71 * hash + this.id;
-        hash = 71 * hash + Objects.hashCode(this.header);
-        hash = 71 * hash + Objects.hashCode(this.editor);
-        hash = 71 * hash + Objects.hashCode(this.blockType);
-        hash = 71 * hash + this.order;
+        int hash = 5;
+        hash = 11 * hash + this.id;
+        hash = 11 * hash + Objects.hashCode(this.editor);
         return hash;
     }
 
+    /**
+     * So sánh một {@link Object} với {@link NoteBlock} này.
+     * @param obj Object cần so sánh
+     * @return {@code true} nếu obj là một thể hiện của NoteBlock
+     * và thuộc tính {@code noteId}, {@code editor} của obj bằng với
+     * {@code noteId}, {@code editor} của NoteBlock
+     * @see hashCode()
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -100,27 +105,24 @@ public class NoteBlock extends DTO {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (!(obj instanceof NoteBlock)) {
             return false;
         }
         final NoteBlock other = (NoteBlock) obj;
-        if (this.order != other.order) {
+        if (this.id != other.id) {
             return false;
         }
-        if (!Objects.equals(this.id, other.id)) {
-            return false;
-        }
-        if (!Objects.equals(this.header, other.header)) {
-            return false;
-        }
-        if (!Objects.equals(this.editor, other.editor)) {
-            return false;
-        }
-        return this.blockType == other.blockType;
+        return Objects.equals(this.editor, other.editor);
     }
 
     @Override
     public String toString() {
-        return "NoteBlock{" + "id=" + id + ", header=" + header + ", editor=" + editor + ", blockType=" + blockType + ", order=" + order + '}';
+        return "NoteBlock{" + 
+                "id=" + id + 
+                ", header=" + header + 
+                ", editor=" + editor + 
+                ", blockType=" + blockType + 
+                ", order=" + order + 
+                '}';
     }
 }

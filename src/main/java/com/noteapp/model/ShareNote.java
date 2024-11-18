@@ -1,7 +1,10 @@
 package com.noteapp.model;
 
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -12,8 +15,9 @@ import java.util.Objects;
  */
 
 public class ShareNote extends Note {
-    private String receiver;
+    private String editor;
     private ShareType shareType;
+    private Map<String, List<NoteBlock>> otherEditorBlocks;
     
     /**
      * Định nghĩa các kiểu Share
@@ -27,43 +31,69 @@ public class ShareNote extends Note {
      */
     public ShareNote() {
         super();
-        this.receiver = "";
+        this.editor = "";
         this.shareType = ShareType.READ_ONLY;
+        this.otherEditorBlocks = new HashMap<>();
     }
 
-    public ShareNote(String receiver, ShareType shareType) {
+    public ShareNote(String receiver, ShareType shareType, Map<String, List<NoteBlock>> otherEditorBlocks) {
         super();
-        this.receiver = receiver;
+        this.editor = receiver;
         this.shareType = shareType;
+        this.otherEditorBlocks = otherEditorBlocks;
     }
 
-    public ShareNote(String receiver, ShareType shareType, int id, String author, String header, List<NoteBlock> blocks, Date lastModifiedDate, List<NoteFilter> filters) {
+    public ShareNote(String receiver, ShareType shareType, Map<String, List<NoteBlock>> otherEditorBlocks, int id, String author, String header, List<NoteBlock> blocks, Date lastModifiedDate, List<NoteFilter> filters) {
         super(id, author, header, blocks, lastModifiedDate, filters);
-        this.receiver = receiver;
+        this.editor = receiver;
         this.shareType = shareType;
+        this.otherEditorBlocks = otherEditorBlocks;
     }
 
-    public String getReceiver() {
-        return receiver;
+    public String getEditor() {
+        return editor;
     }
     
     public ShareType getShareType() {
         return shareType;
     }
 
-    public void setReceiver(String receiver) {
-        this.receiver = receiver;
+    public void setEditor(String editor) {
+        this.editor = editor;
     }
     
     public void setShareType(ShareType shareType) {
         this.shareType = shareType;
     }
 
+    public Map<String, List<NoteBlock>> getOtherEditorBlocks() {
+        return otherEditorBlocks;
+    }
+
+    public void setOtherEditorBlocks(Map<String, List<NoteBlock>> otherEditorBlocks) {
+        this.otherEditorBlocks = otherEditorBlocks;
+    }
+    
+    public List<NoteBlock> getOtherEditorBlocksOf(String editor) {
+        return otherEditorBlocks.get(editor);
+    }
+    
+    public void setOtherEditorBlocksOf(String editor, List<NoteBlock> otherEditorBlocksOf) {
+        otherEditorBlocks.put(editor, otherEditorBlocksOf);
+    }
+    
+    public void addOtherEditorBlock(NoteBlock otherEditorBlock) {
+        String blockEditor = otherEditorBlock.getEditor();
+        if(!otherEditorBlocks.containsKey(blockEditor)) {
+            otherEditorBlocks.put(blockEditor, new ArrayList<>());
+        }
+        otherEditorBlocks.get(blockEditor).add(otherEditorBlock);
+    }
+
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 53 * hash + Objects.hashCode(this.receiver);
-        hash = 53 * hash + Objects.hashCode(this.shareType);
+        hash = 53 * hash + Objects.hashCode(this.editor);
         return hash;
     }
 
@@ -75,7 +105,7 @@ public class ShareNote extends Note {
         if(obj == null) {
             return false;
         }
-        if(getClass() != obj.getClass()) {
+        if(!(obj instanceof ShareNote)) {
             return false;
         }
         final ShareNote other = (ShareNote) obj;
@@ -83,10 +113,7 @@ public class ShareNote extends Note {
         if(!super.equals(otherNote)) {
             return false;
         }
-        if(!Objects.equals(this.receiver, other.receiver)) {
-            return false;
-        }
-        return this.shareType == other.shareType;
+        return Objects.equals(this.editor, other.editor);
     }
     
     /**
@@ -104,6 +131,6 @@ public class ShareNote extends Note {
 
     @Override
     public String toString() {
-        return "ShareNote{" + "receiver=" + receiver + ", shareType=" + shareType + '}';
+        return "ShareNote{" + "editor=" + editor + ", shareType=" + shareType + ", otherEditorBlocks=" + otherEditorBlocks + '}';
     }
 }
