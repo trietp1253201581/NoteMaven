@@ -1,6 +1,6 @@
 package com.noteapp;
 
-
+import com.noteapp.controller.LoginController;
 import java.io.IOException;
 import java.util.Optional;
 import javafx.application.Application;
@@ -27,7 +27,35 @@ public class NoteLite extends Application {
      */
     @Override
     public void start(Stage primaryStage) {
-        System.out.println("hello");
+        try {
+            //Mở GUI Login trước
+            FXMLLoader fXMLLoader = new FXMLLoader();
+            String loginFXMLPath = "view/LoginView.fxml";
+            fXMLLoader.setLocation(getClass().getResource(loginFXMLPath));
+            //Chuyển sang GUI Login
+            Scene scene = new Scene(fXMLLoader.load());
+            LoginController loginController = fXMLLoader.getController();
+            loginController.setStage(primaryStage);
+            loginController.init();
+            //Thiết lập các hiệu ứng di chuyển
+            posX = 0;
+            posY = 0;
+            scene.setOnMousePressed((MouseEvent mouseEvent) -> {
+                posX = mouseEvent.getSceneX();
+                posY = mouseEvent.getSceneY();
+            });
+            scene.setOnMouseDragged((MouseEvent mouseEvent) -> {
+                primaryStage.setX(mouseEvent.getScreenX() - posX);
+                primaryStage.setY(mouseEvent.getScreenY() - posY);
+            });
+            //Set scene cho stage và show
+            primaryStage.setScene(scene);
+            primaryStage.initStyle(StageStyle.UNDECORATED);
+            primaryStage.show();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Can't open application");
+        }
     }
 
     public static void main(String[] args) {
