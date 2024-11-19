@@ -1,6 +1,6 @@
 package com.noteapp.controller;
 
-import com.noteapp.model.dto.NoteBlock;
+import com.noteapp.model.TextBlock;
 import java.util.List;
 import java.util.Objects;
 import javafx.event.ActionEvent;
@@ -15,7 +15,7 @@ import javafx.scene.layout.Region;
  *
  * @author admin
  */
-public class BlockController extends Controller {
+public class TextBlockController extends Controller {
     @FXML
     private Label viewText;
     @FXML
@@ -40,28 +40,27 @@ public class BlockController extends Controller {
     private Label changeNotify;
     
     private int noteId;
-    private NoteBlock noteBlock;
+    private TextBlock textBlock;
     private boolean isEditing;
     private List<String> otherEditors;
     
     @Override
     public void init() {
         noteId = -1;
-        noteBlock = new NoteBlock();
+        textBlock = new TextBlock();
         isEditing = false;
         
         editButton.setOnAction((ActionEvent event) -> {
-            switchToEditableStatus();
+            setEditable(true);
+            switchToEditableText();
         });
         
         saveButton.setOnAction((ActionEvent event) -> {
-            saveEditedText();
+            setEditable(false);
+            switchToViewText();
         });
         returnToYoursButton.setOnAction((ActionEvent event) -> {
             returnToYourContent();
-        });
-        setToDefaultButton.setOnAction((ActionEvent event) -> {
-            noteBlock.setContent(viewText.getText());
         });
         otherEditComboBox.setPromptText("Other edit by");
         changeNotify.setText("");
@@ -77,9 +76,26 @@ public class BlockController extends Controller {
             otherEditComboBox.getItems().add(otherEditor);
         }
     }
+    
+    public void setHeader(String header) {
+        blockHeader.setText(header);
+    }
 
-    public boolean getIsEditing() {
-        return isEditing;
+    public void setNoteId(int noteId) {
+        this.noteId = noteId;
+        this.textBlock.setId(noteId);
+    }
+
+    public void setTextBlock(TextBlock textBlock) {
+        this.textBlock = textBlock;
+    }
+
+    public void setIsEditing(boolean isEditing) {
+        this.isEditing = isEditing;
+    }
+
+    public void setOtherEditors(List<String> otherEditors) {
+        this.otherEditors = otherEditors;
     }
 
     public Button getEditButton() {
@@ -89,45 +105,41 @@ public class BlockController extends Controller {
     public Button getSaveButton() {
         return saveButton;
     }
-    
+
     public Button getDeleteButton() {
         return deleteButton;
     }
-    
+
     public Button getSetToDefaultButton() {
         return setToDefaultButton;
     }
-    
-    public Button getSwitchToOther() {
+
+    public ComboBox<String> getOtherEditComboBox() {
+        return otherEditComboBox;
+    }
+
+    public Button getReturnToYoursButton() {
+        return returnToYoursButton;
+    }
+
+    public Button getSwitchToOtherButton() {
         return switchToOtherButton;
-    } 
+    }
 
     public int getNoteId() {
         return noteId;
     }
 
-    public NoteBlock getNoteBlock() {
-        return noteBlock;
-    }
-    
-    public String getOtherEditor() {
-        return otherEditComboBox.getSelectionModel().getSelectedItem();
+    public TextBlock getTextBlock() {
+        return textBlock;
     }
 
-    public void setNoteId(int noteId) {
-        this.noteId = noteId;
+    public boolean isIsEditing() {
+        return isEditing;
     }
-        
-    public void setHeader(String blockHeader) {
-        this.blockHeader.setText(blockHeader);
-    } 
 
-    public void setNoteBlock(NoteBlock noteBlock) {
-        this.noteBlock = noteBlock;
-    }
-    
-    public void setOtherEditors(List<String> otherEditors) {
-        this.otherEditors = otherEditors;
+    public List<String> getOtherEditors() {
+        return otherEditors;
     }
     
     public String getTextFromView() {
@@ -146,28 +158,26 @@ public class BlockController extends Controller {
         editableText.setText(text);
     }
     
-    public void switchToEditableStatus() {
-        viewText.setVisible(false);
-        editableText.setVisible(true);
-        isEditing = true;
-        
+    public void setEditable(boolean editable) {
+        viewText.setVisible(!editable);
+        editableText.setVisible(editable);
+        isEditing = editable;
+    }
+    
+    public void switchToEditableText() {        
         editableText.setText(viewText.getText());
         editableText.setPrefHeight(viewText.getPrefHeight());
         editableText.setPrefRowCount(viewText.getText().split("\n").length);
     }
     
-    public void saveEditedText() {
-        editableText.setVisible(false);
-        viewText.setVisible(true);
-        isEditing = false;
-        
+    public void switchToViewText() {
         viewText.setText(editableText.getText());
         viewText.setPrefHeight(Region.USE_COMPUTED_SIZE);
     }
     
     public void returnToYourContent() {
-        editableText.setText(NoteBlock.TextContentConverter.convertToObjectText(noteBlock.getContent()));
-        saveEditedText();
+        editableText.setText(textBlock.getContent());
+        switchToViewText();
     }
     
     public void setChangeNotify(List<String> hadModifiedEditors) {
@@ -187,7 +197,7 @@ public class BlockController extends Controller {
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 47 * hash + Objects.hashCode(this.noteBlock);
+        hash = 47 * hash + Objects.hashCode(this.textBlock);
         return hash;
     }
 
@@ -202,7 +212,7 @@ public class BlockController extends Controller {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final BlockController other = (BlockController) obj;
-        return Objects.equals(this.noteBlock, other.noteBlock);
+        final TextBlockController other = (TextBlockController) obj;
+        return Objects.equals(this.textBlock, other.textBlock);
     }
 }

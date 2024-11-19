@@ -11,7 +11,7 @@ import javafx.scene.image.ImageView;
  * @since 31/03/2024
  * @version 1.0
  */
-public class NoteFiltersController {
+public class NoteFiltersController extends Controller {
     //Thuộc tính FXML
     @FXML
     private Label filterLabel;

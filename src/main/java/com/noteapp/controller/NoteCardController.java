@@ -1,8 +1,8 @@
 package com.noteapp.controller;
 
-import com.noteapp.model.dto.Note;
-import com.noteapp.model.dto.NoteFilter;
-import com.noteapp.model.dto.ShareNote;
+import com.noteapp.model.Note;
+import com.noteapp.model.NoteFilter;
+import com.noteapp.model.ShareNote;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
@@ -22,21 +22,59 @@ public class NoteCardController extends Controller {
     @FXML
     private Label author;
     @FXML
-    private Label filtersOrShareType;
+    private Label filters;
+    @FXML
+    private Label shareStatus;
     
-    private Note note;
-    private ShareNote shareNote;
+    private int id;
+    private String editor;
 
-    public Note getNote() {
-        return note;
+    public String getHeader() {
+        return header.getText();
     }
-    
-    public ShareNote getShareNote() {
-        return shareNote;
+
+    public void setHeader(String header) {
+        this.header.setText(header);
     }
-    
-    public ShareNote.ShareType getShareType() {
-        return ShareNote.ShareType.valueOf(filtersOrShareType.getText());
+
+    public String getLastModifiedDate() {
+        return lastModifiedDate.getText();
+    }
+
+    public void setLastModifiedDate(String lastModifiedDate) {
+        this.lastModifiedDate.setText(lastModifiedDate);
+    }
+
+    public String getAuthor() {
+        return author.getText();
+    }
+
+    public void setAuthor(String author) {
+        this.author.setText(author);
+    }
+
+    public String getShareStatus() {
+        return shareStatus.getText();
+    }
+
+    public void setShareStatus(String shareStatus) {
+        this.shareStatus.setText(shareStatus);
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getEditor() {
+        return editor;
+    }
+
+    public void setEditor(String editor) {
+        this.editor = editor;
     }
     
     /**
@@ -44,7 +82,8 @@ public class NoteCardController extends Controller {
      * @param note note chứa dữ liệu cần chuyển vào Note Card
      */
     public void setData(Note note) {
-        this.note = note;
+        this.id = note.getId();
+        this.editor = note.getAuthor();
         header.setText(note.getHeader());
         lastModifiedDate.setText(String.valueOf(note.getLastModifiedDate()));
         author.setText(note.getAuthor());
@@ -53,10 +92,11 @@ public class NoteCardController extends Controller {
             filtersString += filter.getFilterContent() + ", ";
         }
         if(filtersString.isEmpty()) {
-            filtersOrShareType.setText(filtersString);
+            filters.setText(filtersString);
         } else {
-            filtersOrShareType.setText(filtersString.substring(0, filtersString.length() - 2));
+            filters.setText(filtersString.substring(0, filtersString.length() - 2));
         }
+        shareStatus.setText("PRIVATE");
     }
     
     /**
@@ -64,14 +104,8 @@ public class NoteCardController extends Controller {
      * @param shareNote shareNote chứa dữ liệu cần chuyển
      */
     public void setData(ShareNote shareNote) {
-        this.shareNote = shareNote;
-        header.setText(shareNote.getHeader());
-        lastModifiedDate.setText(String.valueOf(shareNote.getLastModifiedDate()));
-        author.setText(shareNote.getAuthor());
-        filtersOrShareType.setText(shareNote.getShareType().toString());
-    }
-
-    @Override
-    public void init() {
+        this.setData((Note) shareNote);
+        this.editor = shareNote.getEditor();
+        shareStatus.setText(shareNote.getShareType().toString());
     }
 }

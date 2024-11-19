@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="75.0" prefWidth="505.0" styleClass="hbox-form" stylesheets="@anotherStyle.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.noteapp.controller.NoteCardController">
+<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="75.0" prefWidth="505.0" styleClass="hbox-form" stylesheets="@anotherStyle.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <ImageView fitHeight="65.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true">
          <image>
@@ -37,12 +37,21 @@
                   </Label>
                </children>
             </HBox>
-            <Label fx:id="author" prefHeight="20.0" prefWidth="435.0" text="Author">
-               <font>
-                  <Font name="System Italic" size="12.0" />
-               </font>
-            </Label>
-            <Label fx:id="filtersOrShareType" prefHeight="20.0" prefWidth="435.0" text="Filters(Note) Or Type(ShareNote)" />
+            <HBox prefHeight="20.0" prefWidth="200.0">
+               <children>
+                  <Label fx:id="author" prefHeight="20.0" prefWidth="435.0" text="Author">
+                     <font>
+                        <Font name="System Italic" size="12.0" />
+                     </font>
+                  </Label>
+                  <Label fx:id="shareStatus" prefHeight="19.0" prefWidth="188.0" text="Share Status">
+                     <font>
+                        <Font name="System Italic" size="12.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+            <Label fx:id="filters" prefHeight="20.0" prefWidth="435.0" text="Filters" />
          </children>
       </VBox>
    </children>

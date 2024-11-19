@@ -58,6 +58,20 @@ public class UserService {
         }
     }
     
+    public void updatePassword(String username, String newPassword) throws ServerServiceException {
+        getInstanceOfDAO();
+        DAOKey key = new DAOKey();
+        String keyName = "username";
+        key.addKey(keyName, username);
+        try {
+            User user = userDAO.get(key);
+            user.setPassword(newPassword);
+            userDAO.update(user);
+        } catch (DAOException exByGet) {
+            throw new ServerServiceException(exByGet.getMessage());
+        }
+    }
+    
     public User update(User user) throws ServerServiceException {
         getInstanceOfDAO();
         try {

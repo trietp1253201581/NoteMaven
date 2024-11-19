@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.text.Font?>
 
-<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.noteapp.controller.RegisterController">
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <BorderPane prefHeight="200.0" prefWidth="200.0">
          <center>
@@ -78,10 +78,10 @@
                      </font>
                   </TextField>
                   <Label layoutX="263.0" layoutY="241.0" text="Year" />
-                  <Label fx:id="errorNameFieldLabel" layoutX="107.0" layoutY="70.0" text="Input your name!" textFill="#d00000" />
-                  <Label fx:id="errorUsernameFieldLabel" layoutX="107.0" layoutY="120.0" text="Input your username!" textFill="#d00000" />
-                  <Label fx:id="errorPasswordFieldLabel" layoutX="107.0" layoutY="170.0" text="Input your password!" textFill="#d00000" />
-                  <Label fx:id="errorBirthdayFieldLabel" layoutX="107.0" layoutY="220.0" text="Invalid information!" textFill="#d00000" />
+                  <Label fx:id="errorNameFieldLabel" layoutX="125.0" layoutY="70.0" text="Input your name!" textFill="#d00000" />
+                  <Label fx:id="errorUsernameFieldLabel" layoutX="125.0" layoutY="120.0" text="Input your username!" textFill="#d00000" />
+                  <Label fx:id="errorPasswordFieldLabel" layoutX="125.0" layoutY="170.0" text="Input your password!" textFill="#d00000" />
+                  <Label fx:id="errorBirthdayFieldLabel" layoutX="125.0" layoutY="220.0" text="Invalid information!" textFill="#d00000" />
                   <Label layoutX="23.0" layoutY="320.0" text="Gender" />
                   <RadioButton fx:id="genderMale" layoutX="15.0" layoutY="345.0" mnemonicParsing="false" text="Male">
                      <toggleGroup>
@@ -90,19 +90,19 @@
                   </RadioButton>
                   <RadioButton fx:id="genderFemale" layoutX="125.0" layoutY="345.0" mnemonicParsing="false" text="Female" toggleGroup="$GenderGroup" />
                   <RadioButton fx:id="genderOther" layoutX="235.0" layoutY="345.0" mnemonicParsing="false" text="Other" toggleGroup="$GenderGroup" />
-                  <Label layoutX="23.0" layoutY="370.0" text="Email Address" />
-                  <TextField fx:id="emailAddressField" layoutX="15.0" layoutY="385.0" prefHeight="30.0" prefWidth="370.0" promptText="Username" styleClass="field-form" stylesheets="@anotherStyle.css">
+                  <Label layoutX="23.0" layoutY="370.0" text="Email Address *" />
+                  <TextField fx:id="emailAddressField" layoutX="15.0" layoutY="385.0" prefHeight="30.0" prefWidth="370.0" promptText="Email Address" styleClass="field-form" stylesheets="@anotherStyle.css">
                      <font>
                         <Font size="14.0" />
                      </font>
                   </TextField>
                   <Label layoutX="23.0" layoutY="420.0" text="Email Name" />
-                  <TextField fx:id="emailNameField" layoutX="15.0" layoutY="435.0" prefHeight="30.0" prefWidth="370.0" promptText="Username" styleClass="field-form" stylesheets="@anotherStyle.css">
+                  <TextField fx:id="emailNameField" layoutX="15.0" layoutY="435.0" prefHeight="30.0" prefWidth="370.0" styleClass="field-form" stylesheets="@anotherStyle.css">
                      <font>
                         <Font size="14.0" />
                      </font>
                   </TextField>
-                  <Label fx:id="errorEmailFieldLabel" layoutX="107.0" layoutY="370.0" text="Invalid format!" textFill="#d00000" />
+                  <Label fx:id="errorEmailFieldLabel" layoutX="125.0" layoutY="370.0" text="Invalid format!" textFill="#d00000" />
                </children>
             </AnchorPane>
          </center>

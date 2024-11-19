@@ -1,9 +1,11 @@
 package com.noteapp.controller;
 
-import com.noteapp.dao.DAOException;
-import com.noteapp.model.dto.Email;
-import com.noteapp.model.dto.User;
-import com.noteapp.service.server.CreateUserService;
+import com.noteapp.model.Email;
+import com.noteapp.model.User;
+import com.noteapp.service.security.MailjetSevice;
+import com.noteapp.service.security.SixNumVerificationCodeService;
+import com.noteapp.service.security.VerificationMailService;
+import com.noteapp.service.server.ServerServiceException;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -19,6 +21,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.MouseEvent;
 
 /**
@@ -73,6 +76,7 @@ public class RegisterController extends Controller {
     
     @Override
     public void init() {
+        initServerService();
         initScene();
         registerButton.setOnAction((ActionEvent event) -> {
             register();
@@ -171,36 +175,67 @@ public class RegisterController extends Controller {
             return;
         }
         
+        createUser(newUser);
+    }
+    
+    protected void createUser(User newUser) {
+        VerificationMailService.CodeStatus codeStatus = verifyEmail();
         try { 
             //Tạo User mới thành công
-            userService = new CreateUserService(newUser);
-            userService.execute();
-            showAlert(Alert.AlertType.INFORMATION, "Successfully create");
-            Optional<ButtonType> optional = showAlert(Alert.AlertType.CONFIRMATION, "Back to Login");
-            if(optional.get() == ButtonType.OK) {
-                //Quay về trang đăng nhập
-                openLogin();
-            }          
-        } catch (DAOException ex) {
+            switch (codeStatus) {
+                case EXPIRED -> {
+                    showAlert(Alert.AlertType.ERROR, "This code is expired!");
+                }
+                case FALSE -> {
+                    showAlert(Alert.AlertType.ERROR, "This code is false!");
+                }
+                case TRUE -> {
+                    userService.create(newUser);
+                    showAlert(Alert.AlertType.INFORMATION, "Successfully create");
+                    Optional<ButtonType> optional = showAlert(Alert.AlertType.CONFIRMATION, "Back to Login");
+                    if(optional.get() == ButtonType.OK) {
+                        //Quay về trang đăng nhập
+                        openLogin();
+                    }          
+                }
+            }
+        } catch (ServerServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }
     
+    protected VerificationMailService.CodeStatus verifyEmail() {
+        Email toEmail = new Email();
+        toEmail.setAddress(emailAddressField.getText());
+        toEmail.setName(emailNameField.getText());
+        verificationMailService = new VerificationMailService(new MailjetSevice(), 
+                    new SixNumVerificationCodeService());
+        verificationMailService.sendCode(toEmail);
+        
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("VERIFY CODE HAS SENT TO YOUR EMAIL");
+        dialog.setHeaderText("Enter your verification code");
+        //Lấy kết quả
+        Optional<String> confirm = dialog.showAndWait();
+        confirm.ifPresent(inputCode -> {
+            
+            verificationMailService.checkCode(inputCode);
+        });
+        return verificationMailService.getCodeStatus();
+    }
+    
     protected void openLogin() {
         try {
-            //Load Login GUI
-            FXMLLoader fXMLLoader = new FXMLLoader();
-            String loginFXMLPath = "/com/noteapp/view/LoginView.fxml";
-            fXMLLoader.setLocation(getClass().getResource(loginFXMLPath));
-            //Chuyển sang GUI Login
-            scene = new Scene(fXMLLoader.load());
-            LoginController loginController = fXMLLoader.getController();
-            loginController.setStage(stage);
-            loginController.init();
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "LoginView.fxml";
             
-            setSceneMoveable();
+            LoginController controller = new LoginController();
+
+            controller.setStage(stage);
+            controller.loadFXMLAndSetScene(filePath, controller);
+            controller.init();
+            //Set scene cho stage và show
             
-            stage.setScene(scene);  
+            controller.showFXML();
         } catch (IOException ex) {
             showAlert(Alert.AlertType.ERROR, "Can't open login");
         }

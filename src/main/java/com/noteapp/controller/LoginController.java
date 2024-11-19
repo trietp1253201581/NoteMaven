@@ -1,14 +1,10 @@
 package com.noteapp.controller;
 
-import com.noteapp.dao.DAOException;
-import com.noteapp.model.dto.Note;
-import com.noteapp.model.dto.User;
-import com.noteapp.service.server.CheckLoginService;
+import com.noteapp.model.User;
+import com.noteapp.service.server.ServerServiceException;
 import java.io.IOException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -40,6 +36,7 @@ public class LoginController extends Controller {
         
     @Override
     public void init() {
+        initServerService();
         loginButton.setOnAction((ActionEvent event) -> {
             login();
         });
@@ -61,78 +58,70 @@ public class LoginController extends Controller {
       
         //Kiểm tra thông tin đăng nhập
         try { 
-            //Trường hợp đăng nhập thành công
-            userService = new CheckLoginService(username, password);
-            //Thiết lập user nhận được
-            User user = userService.execute();
+            User user = userService.checkPassword(username, password);
             showAlert(Alert.AlertType.INFORMATION, "Successfully Login");
             //Mở Dashboard của user này
-            openEditNoteView(user);
-        } catch (DAOException ex) {
+            openDashboard(user);
+        } catch (ServerServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }
 
     protected void openEditNoteView(User user) {
-        try {
-            FXMLLoader fXMLLoader = new FXMLLoader();
-            String registerViewPath = "/com/noteapp/view/EditNoteView.fxml";
-            fXMLLoader.setLocation(getClass().getResource(registerViewPath));
-
-            scene = new Scene(fXMLLoader.load());
-            
-            EditNoteViewController controller = fXMLLoader.getController();
-            controller.setStage(stage);
-            controller.setMyUser(user);
-            controller.setMyNote(new Note());
-            controller.init();
-            controller.setOnAutoUpdate();
-            
-            setSceneMoveable();
-            
-            stage.setScene(scene);  
-        } catch (IOException ex) {
-            showAlert(Alert.AlertType.ERROR, "Can't open edit view");
-        }
+        
     }
     
     protected void openRegister() {
         try {
-            FXMLLoader fXMLLoader = new FXMLLoader();
-            String registerViewPath = "/com/noteapp/view/RegisterView.fxml";
-            fXMLLoader.setLocation(getClass().getResource(registerViewPath));
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "RegisterView.fxml";
+            
+            RegisterController controller = new RegisterController();
 
-            scene = new Scene(fXMLLoader.load());
+            controller.setStage(stage);
+            controller.loadFXMLAndSetScene(filePath, controller);
+            controller.init();
+            //Set scene cho stage và show
             
-            RegisterController registerController = fXMLLoader.getController();
-            registerController.setStage(stage);
-            registerController.init();
-            
-            setSceneMoveable();
-            
-            stage.setScene(scene);  
+            controller.showFXML();
         } catch (IOException ex) {
             showAlert(Alert.AlertType.ERROR, "Can't open register");
         }
     }
     
-    protected void openResetPasswordView() {
+    protected void openResetPasswordView() { 
         try {
-            FXMLLoader fXMLLoader = new FXMLLoader();
-            String resetPasswordViewPath = "/com/noteapp/view/ResetPasswordView.fxml";
-            fXMLLoader.setLocation(getClass().getResource(resetPasswordViewPath));
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "ResetPasswordView.fxml";
+            
+            ResetPasswordController controller = new ResetPasswordController();
 
-            scene = new Scene(fXMLLoader.load());
-            
-            ResetPasswordController controller = fXMLLoader.getController();
             controller.setStage(stage);
+            controller.loadFXMLAndSetScene(filePath, controller);
             controller.init();
+            //Set scene cho stage và show
             
-            setSceneMoveable();
-            stage.setScene(scene);
+            controller.showFXML();
         } catch (IOException ex) {
-            showAlert(Alert.AlertType.ERROR, "Can't open reset password view");
+            ex.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Can't open reset Password");
         }
-        
     }
+    
+    protected void openDashboard(User myUser) {
+        try {
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "DashboardView.fxml";
+            
+            DashboardController controller = new DashboardController();
+
+            controller.setStage(stage);
+            controller.setMyUser(myUser);
+            controller.loadFXMLAndSetScene(filePath, controller);
+            controller.init();
+            //Set scene cho stage và show
+            
+            controller.showFXML();
+        } catch (IOException ex) {
+            showAlert(Alert.AlertType.ERROR, "Can't open dashboard");
+        }
+    }
+        
 }

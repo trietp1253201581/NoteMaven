@@ -1,19 +1,13 @@
 package com.noteapp.controller;
 
-import com.noteapp.model.dto.Note;
-import com.noteapp.model.dto.ShareNote;
-import com.noteapp.model.dto.User;
-import com.noteapp.dao.DAOException;
-import com.noteapp.model.dto.Email;
-import com.noteapp.model.dto.NoteBlock;
-import com.noteapp.model.dto.NoteFilter;
-import com.noteapp.service.server.CreateNoteService;
-import com.noteapp.service.server.DeleteNoteService;
-import com.noteapp.service.server.GetAllNotesService;
-import com.noteapp.service.server.GetAllReceivedNotesService;
-import com.noteapp.service.server.OpenNoteService;
-import com.noteapp.service.server.SendNoteService;
-import com.noteapp.service.server.UpdateUserService;
+import com.noteapp.model.Email;
+import com.noteapp.model.Note;
+import com.noteapp.model.NoteBlock;
+import com.noteapp.model.NoteFilter;
+import com.noteapp.model.ShareNote;
+import com.noteapp.model.TextBlock;
+import com.noteapp.model.User;
+import com.noteapp.service.server.ServerServiceException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Date;
@@ -163,6 +157,7 @@ public class DashboardController extends Controller {
     
     @Override
     public void init() {
+        initServerService();
         initView();
         closeButton.setOnAction((ActionEvent event) -> {
             super.close();
@@ -171,9 +166,8 @@ public class DashboardController extends Controller {
         myNotesButton.setOnAction((ActionEvent event) -> {
             changeSceneInExtraScene(myNotesButton);
             try {
-                noteCollectionService = new GetAllNotesService(myUser.getUsername());
-                myNotes = noteCollectionService.execute();
-            } catch (DAOException ex) {
+                myNotes = noteService.getAll(myUser.getUsername());
+            } catch (ServerServiceException ex) {
                 myNotes = new ArrayList<>();
             }
             initMyNotesScene(myNotes);
@@ -185,9 +179,8 @@ public class DashboardController extends Controller {
         importExportButton.setOnAction((ActionEvent event) -> {
             changeSceneInExtraScene(importExportButton);
             try {
-                noteCollectionService = new GetAllNotesService(myUser.getUsername());
-                myNotes = noteCollectionService.execute();
-            } catch (DAOException ex) {
+                myNotes = noteService.getAll(myUser.getUsername());
+            } catch (ServerServiceException ex) {
                 myNotes = new ArrayList<>();
             }
             initImportExportScene(myNotes);
@@ -198,17 +191,14 @@ public class DashboardController extends Controller {
             //Lấy tất cả các note của myUser
             try { 
                 //Lấy thành công
-                noteCollectionService = new GetAllNotesService(myUser.getUsername());
-                myNotes = noteCollectionService.execute();
-            } catch (DAOException ex) {
+                myNotes = noteService.getAll(myUser.getUsername());
+            } catch (ServerServiceException ex) {
                 showAlert(Alert.AlertType.ERROR, ex.getMessage());
             }
             //Lấy tất cả các note được share tới myUser này
             try { 
-                //Lấy thành công
-                shareNoteCollectionService = new GetAllReceivedNotesService(myUser.getUsername());
-                mySharedNotes = shareNoteCollectionService.execute();
-            } catch (DAOException ex) {
+                mySharedNotes = shareNoteService.getAllReceived(myUser.getUsername());
+            } catch (ServerServiceException ex) {
                 showAlert(Alert.AlertType.ERROR, ex.getMessage());
             }
             //Init lại Scene
@@ -255,11 +245,10 @@ public class DashboardController extends Controller {
     }
     
     public void initView() {
-        try {
-            userLabel.setText(myUser.getName());
-            noteCollectionService = new GetAllNotesService(myUser.getUsername());
-            myNotes = noteCollectionService.execute();
-        } catch (DAOException ex) {
+        userLabel.setText(myUser.getName());
+        try {           
+            myNotes = noteService.getAll(myUser.getUsername());
+        } catch (ServerServiceException ex) {
             myNotes = new ArrayList<>();
         }
         initMyNotesScene(myNotes);
@@ -273,29 +262,28 @@ public class DashboardController extends Controller {
             return;
         }
         //Load các Note Card
+        String filePath = Controller.DEFAULT_FXML_RESOURCE + "NoteCardView.fxml";
         for(int i=0; i < notes.size(); i++) {
             //Load Note Card Layout
-            FXMLLoader fXMLLoader = new FXMLLoader();
-            String noteCardFXMLPath = "/com/noteapp/view/NoteCardView.fxml";
-            fXMLLoader.setLocation(getClass().getResource(noteCardFXMLPath));
             try {
-                HBox box = fXMLLoader.load();
                 //Thiết lập dữ liệu cho Note Card
-                NoteCardController noteCardFXMLController = fXMLLoader.getController();
-                noteCardFXMLController.setData(notes.get(i));
+                NoteCardController controller = new NoteCardController();
+                
+                HBox box = controller.loadFXML(filePath, controller);
+                controller.setData(notes.get(i));
                 //Xử lý khi nhấn vào note card
                 box.setOnMouseClicked((MouseEvent event) -> {
                     //Tạo thông báo và mở note nếu chọn OK
                     Optional<ButtonType> optional = showAlert(Alert.AlertType.CONFIRMATION, 
-                            "Open " + noteCardFXMLController.getNote().getHeader());
+                            "Open " + controller.getHeader());
                     if(optional.get() == ButtonType.OK) {                        
                         try {
                             //Lấy thành công
-                            noteService = new OpenNoteService(noteCardFXMLController.getNote().getId());
-                            currentNote = noteService.execute();
+                            int noteId = controller.getId();
+                            currentNote = noteService.open(noteId);
                             //Load lại Edit Scene và mở Edit Scene
                             openEditNoteView(myUser, currentNote);
-                        } catch (DAOException ex) {
+                        } catch (ServerServiceException ex) {
                             showAlert(Alert.AlertType.ERROR, ex.getMessage());
                         }
                     }
@@ -371,29 +359,27 @@ public class DashboardController extends Controller {
         if(shareNotes.isEmpty()) {
             return;
         }
+        String filePath = Controller.DEFAULT_FXML_RESOURCE + "NoteCardView.fxml";
         for(int i=0; i < shareNotes.size(); i++) {
             //Load Note Card Layout
-            FXMLLoader fXMLLoader = new FXMLLoader();
-            String noteCardFXMLPath = "/com/noteapp/view/NoteCardView.fxml";
-            fXMLLoader.setLocation(getClass().getResource(noteCardFXMLPath));
             try {
-                HBox box = fXMLLoader.load();
                 //Thiết lập dữ liệu cho Note Card
-                NoteCardController noteCardFXMLController = fXMLLoader.getController();
-                noteCardFXMLController.setData(shareNotes.get(i));
+                NoteCardController controller = new NoteCardController();
+                controller.setData(notes.get(i));
+                HBox box = controller.loadFXML(filePath, controller);
                 //Xử lý khi nhấn vào note card
                 box.setOnMouseClicked((MouseEvent event) -> {
                     //Tạo thông báo và mở note nếu chọn OK
                     Optional<ButtonType> optional = showAlert(Alert.AlertType.CONFIRMATION, 
-                            "Open " + noteCardFXMLController.getShareNote().getHeader());
-                    if(optional.get() == ButtonType.OK) {
+                            "Open " + controller.getHeader());
+                    if(optional.get() == ButtonType.OK) {                        
                         try {
                             //Lấy thành công
-                            noteService = new OpenNoteService(noteCardFXMLController.getShareNote().getId());
-                            currentNote = noteService.execute();
+                            int noteId = controller.getId();
+                            currentNote = noteService.open(noteId);
                             //Load lại Edit Scene và mở Edit Scene
                             openEditNoteView(myUser, currentNote);
-                        } catch (DAOException ex) {
+                        } catch (ServerServiceException ex) {
                             showAlert(Alert.AlertType.ERROR, ex.getMessage());
                         }
                     }
@@ -421,10 +407,15 @@ public class DashboardController extends Controller {
         List<Note> notes = new ArrayList<>();
         //Thêm các note hợp lệ vào list
         for(Note newNote: myNotes) {
-            if(newNote.getHeader().contains(searchText) 
-                    || NoteFilter.ListConverter.convertToString(newNote.getFilters()).contains(searchText)) { 
+            if(newNote.getHeader().contains(searchText)) { 
                 notes.add(newNote);
-            }     
+            } else {
+                for(NoteFilter noteFilter: newNote.getFilters()) {
+                    if(noteFilter.getFilterContent().contains(searchText)) {
+                        notes.add(newNote);
+                    }
+                }
+            }
         }
         //Load lại My Notes Scene
         initMyNotesScene(notes);
@@ -444,18 +435,18 @@ public class DashboardController extends Controller {
             newNote.setAuthor(myUser.getUsername());
             newNote.setHeader(selectedHeader);
             newNote.getBlocks().add(
-                    new NoteBlock(1, "B1", myUser.getUsername(), "Edit here", NoteBlock.BlockType.TEXT));
+                    new TextBlock("EditHere", -1, 
+                            "B1", myUser.getUsername(), NoteBlock.BlockType.TEXT, 1));
             newNote.setLastModifiedDate(Date.valueOf(LocalDate.now()));
             //Tạo Note mới
             try { 
                 //Tạo thành công
-                noteService = new CreateNoteService(newNote);
-                newNote = noteService.execute();
+                newNote = noteService.create(newNote);
                 showAlert(Alert.AlertType.INFORMATION, "Successfully create " + newNote.getHeader());
                 //Thêm vào list và load lại
                 myNotes.add(newNote);
                 initMyNotesScene(myNotes);
-            } catch (DAOException ex) {
+            } catch (ServerServiceException ex) {
                 showAlert(Alert.AlertType.ERROR, ex.getMessage());
             }
         });
@@ -484,14 +475,13 @@ public class DashboardController extends Controller {
                         deletedNote = note;
                     }
                 }
-                noteService = new DeleteNoteService(deletedNote.getId());
-                deletedNote = noteService.execute();
+                noteService.delete(deletedNote.getId());
                 showAlert(Alert.AlertType.INFORMATION, "Successfully delete " + deletedNote.getHeader());
                 //Xóa khỏi list và load lại
                 myNotes.remove(deletedNote);
                 //Load lại My Notes Scene
                 initMyNotesScene(myNotes);
-            } catch (DAOException ex) {
+            } catch (ServerServiceException ex) {
                 showAlert(Alert.AlertType.ERROR, ex.getMessage());
             }
         });
@@ -566,10 +556,9 @@ public class DashboardController extends Controller {
         //Cập nhật User
         try { 
             //Cập nhật thành công
-            userService = new UpdateUserService(myUser);
-            myUser = userService.execute();
+            userService.update(myUser);
             showAlert(Alert.AlertType.INFORMATION, "Successfully update for " + myUser.getUsername());
-        } catch (DAOException ex) {
+        } catch (ServerServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }
@@ -624,24 +613,20 @@ public class DashboardController extends Controller {
                     selectedNote = note;
                 }
             }
-            noteService = new OpenNoteService(selectedNote.getId());
-            selectedNote = noteService.execute();
+            selectedNote = noteService.open(selectedNote.getId());
             //Lấy receiver Id
             String receiverUsename = chooseUserShareField.getText();
             //Tạo ShareNote mới để Share
-            ShareNote newShareNote = new ShareNote();
-            newShareNote.setNote(selectedNote);
-            newShareNote.setReceiver(receiverUsename);
+            ShareNote.ShareType shareType;
             if(shareTypeReadOnly.isSelected()) {
-                newShareNote.setShareType(ShareNote.ShareType.READ_ONLY);
+                shareType = ShareNote.ShareType.READ_ONLY;
             } else {
-                newShareNote.setShareType(ShareNote.ShareType.CAN_EDIT);
+                shareType = ShareNote.ShareType.CAN_EDIT;
             }
-            shareNoteService = new SendNoteService(newShareNote);
-            shareNoteService.execute();
+            shareNoteService.share(selectedNote, receiverUsename, shareType);
             //Thông báo
             showAlert(Alert.AlertType.INFORMATION, "Successfully share");
-        } catch (DAOException ex) {
+        } catch (ServerServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }
@@ -676,42 +661,35 @@ public class DashboardController extends Controller {
     
     protected void openEditNoteView(User user, Note note) {
         try {
-            FXMLLoader fXMLLoader = new FXMLLoader();
-            String registerViewPath = "/com/noteapp/view/EditNoteView.fxml";
-            fXMLLoader.setLocation(getClass().getResource(registerViewPath));
-
-            scene = new Scene(fXMLLoader.load());
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "EditNoteView.fxml";
             
-            EditNoteViewController controller = fXMLLoader.getController();
+            EditNoteViewController controller = new EditNoteViewController();
+
             controller.setStage(stage);
             controller.setMyUser(user);
             controller.setMyNote(note);
+            controller.loadFXMLAndSetScene(filePath, controller);
             controller.init();
-            controller.setOnAutoUpdate();
+            //Set scene cho stage và show
             
-            setSceneMoveable();
-            
-            stage.setScene(scene);  
+            controller.showFXML();
         } catch (IOException ex) {
-            showAlert(Alert.AlertType.ERROR, "Can't open edit view");
+            showAlert(Alert.AlertType.ERROR, "Can't open login");
         }
     }
     
     protected void openLogin() {
         try {
-            //Load Login GUI
-            FXMLLoader fXMLLoader = new FXMLLoader();
-            String loginFXMLPath = "/com/noteapp/view/LoginView.fxml";
-            fXMLLoader.setLocation(getClass().getResource(loginFXMLPath));
-            //Chuyển sang GUI Login
-            scene = new Scene(fXMLLoader.load());
-            LoginController loginController = fXMLLoader.getController();
-            loginController.setStage(stage);
-            loginController.init();
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "LoginView.fxml";
             
-            setSceneMoveable();
+            LoginController controller = new LoginController();
+
+            controller.setStage(stage);
+            controller.loadFXMLAndSetScene(filePath, controller);
+            controller.init();
+            //Set scene cho stage và show
             
-            stage.setScene(scene);  
+            controller.showFXML();
         } catch (IOException ex) {
             showAlert(Alert.AlertType.ERROR, "Can't open login");
         }

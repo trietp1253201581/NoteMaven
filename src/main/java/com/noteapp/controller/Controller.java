@@ -1,17 +1,14 @@
 package com.noteapp.controller;
 
-import com.noteapp.model.dto.Note;
-import com.noteapp.model.dto.NoteBlock;
-import com.noteapp.model.dto.ShareNote;
-import com.noteapp.model.dto.User;
-import com.noteapp.service.security.MailService;
-import com.noteapp.service.security.VerificationCodeService;
-import com.noteapp.service.server.CollectionServerService;
-import com.noteapp.service.server.ServerService;
+import com.noteapp.service.security.VerificationMailService;
+import com.noteapp.service.server.NoteService;
+import com.noteapp.service.server.ShareNoteService;
+import com.noteapp.service.server.UserService;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -22,26 +19,32 @@ import javafx.stage.Stage;
  *
  * @author admin
  */
-public abstract class Controller {
+public class Controller {
     protected double posX, posY;
-    protected ServerService<User> userService;
-    protected ServerService<Note> noteService;
-    protected ServerService<ShareNote> shareNoteService;
-    protected ServerService<NoteBlock> noteBlockService;
-    protected CollectionServerService<Note> noteCollectionService;
-    protected CollectionServerService<ShareNote> shareNoteCollectionService;
-    protected MailService mailService;
-    protected VerificationCodeService verificationCodeService;
+    protected UserService userService;
+    protected NoteService noteService;
+    protected ShareNoteService shareNoteService;
+    protected VerificationMailService verificationMailService;
     protected Stage stage;
     protected Scene scene;
     
-    public abstract void init();
+    public static final String DEFAULT_FXML_RESOURCE = "/com/noteapp/view/";
+    
+    public void init() {
+        initServerService();
+    }
+    
+    public void initServerService() {
+        userService = new UserService();
+        noteService = new NoteService();
+        shareNoteService = new ShareNoteService();
+    }
     
     public void setStage(Stage stage) {
         this.stage = stage;
     }
     
-    public Optional<ButtonType> showAlert(Alert.AlertType alertType, String text) {
+    public static Optional<ButtonType> showAlert(Alert.AlertType alertType, String text) {
         Alert alert = new Alert(alertType);
         alert.setTitle(String.valueOf(alertType));
         alert.setHeaderText(text);
@@ -73,5 +76,24 @@ public abstract class Controller {
         if(optional.get() == ButtonType.OK) {
             System.exit(0);
         }
+    }
+    
+    public void loadFXMLAndSetScene(String filePath, Object controller) throws IOException {
+        Parent root = this.loadFXML(filePath, controller);
+        scene = new Scene(root);
+        setSceneMoveable();
+        stage.setScene(scene);
+    }
+    
+    public <T extends Parent> T loadFXML(String filePath, Object controller) throws IOException {
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(getClass().getResource(filePath));
+        loader.setController(controller);
+        T root = loader.load();
+        return root;
+    }
+    
+    public void showFXML() {
+        stage.show();
     }
 }

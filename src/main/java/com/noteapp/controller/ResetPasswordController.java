@@ -1,17 +1,13 @@
 package com.noteapp.controller;
 
-import com.noteapp.dao.DAOException;
-import com.noteapp.model.dto.Email;
-import com.noteapp.model.dto.User;
+import com.noteapp.model.Email;
 import com.noteapp.service.security.MailjetSevice;
 import com.noteapp.service.security.SixNumVerificationCodeService;
-import com.noteapp.service.server.GetUserService;
-import com.noteapp.service.server.UpdateUserService;
+import com.noteapp.service.security.VerificationMailService;
+import com.noteapp.service.server.ServerServiceException;
 import java.io.IOException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -38,6 +34,7 @@ public class ResetPasswordController extends Controller {
 
     @Override
     public void init() {
+        initServerService();
         initScene();
         closeButton.setOnAction((ActionEvent event) -> {
             close();
@@ -67,43 +64,41 @@ public class ResetPasswordController extends Controller {
         } else {
             errorUsernameFieldLabel.setVisible(false);
         }
-        userService = new GetUserService(username);
         try {
-            User thisUser = userService.execute();
-            Email thisEmail = thisUser.getEmail();
-            mailService = new MailjetSevice();
-            String subject = "Verification Code for " + username;
-            verificationCodeService = new SixNumVerificationCodeService();
-            verificationCodeService.generateVerificationCode();
-            String verificationCode = verificationCodeService.getVerificationCode();
-            String content = "Your verification code is " + verificationCode;
-            mailService.sendMail(thisEmail, subject, content);
+            Email vefiryEmail = userService.checkEmail(username);
+            verificationMailService = new VerificationMailService(
+                    new MailjetSevice(),
+                    new SixNumVerificationCodeService()
+            );
+            verificationMailService.sendCode(vefiryEmail);
             verificationCodeField.setEditable(true);
-            showAlert(Alert.AlertType.INFORMATION, "Your code is sent");
-        } catch (DAOException ex) {
+        } catch (ServerServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }
     
     protected void checkVerifyCode() {
-        if(verificationCodeService == null) {
+        if(verificationMailService == null) {
             return;
         }
         if(!verificationCodeField.isEditable()) {
             return;
         }
-        String verifyCode = verificationCodeField.getText();
-        boolean isExpiredCode = verificationCodeService.isExpiredCode();
-        boolean checkCode = verificationCodeService.verifyCode(verifyCode);
-        if (isExpiredCode) {
-            showAlert(Alert.AlertType.ERROR, "Your code is expired!");
-            verificationCodeField.setEditable(false);
-        } else if (!checkCode) {
-            showAlert(Alert.AlertType.ERROR, "Your code is false!");
-        } else {
-            showAlert(Alert.AlertType.INFORMATION, "Please input your new password!");
-            passwordField.setEditable(true);
-        }
+        String inputCode = verificationCodeField.getText();
+        verificationMailService.checkCode(inputCode);
+        VerificationMailService.CodeStatus codeStatus = verificationMailService.getCodeStatus();
+        switch (codeStatus) {
+                case EXPIRED -> {
+                    showAlert(Alert.AlertType.ERROR, "This code is expired!");
+                }
+                case FALSE -> {
+                    showAlert(Alert.AlertType.ERROR, "This code is false!");
+                }
+                case TRUE -> {
+                    showAlert(Alert.AlertType.INFORMATION, "Please input your new password below");
+                    passwordField.setEditable(true);
+                }
+            }
     }
     
     protected void resetPassword() {
@@ -112,36 +107,27 @@ public class ResetPasswordController extends Controller {
         }
         String username = usernameField.getText();
         try {
-            userService = new GetUserService(username);
-            User thisUser = userService.execute();
-            thisUser.setPassword(passwordField.getText());
-            
-            userService = new UpdateUserService(thisUser);
-            userService.execute();
-            
+            userService.updatePassword(username, passwordField.getText());
             initScene();
             showAlert(Alert.AlertType.INFORMATION, "Successfully reset.");
             openLogin();
-        } catch (DAOException ex) {
+        } catch (ServerServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }
     
     protected void openLogin() {
         try {
-            //Load Login GUI
-            FXMLLoader fXMLLoader = new FXMLLoader();
-            String loginFXMLPath = "/com/noteapp/view/LoginView.fxml";
-            fXMLLoader.setLocation(getClass().getResource(loginFXMLPath));
-            //Chuyển sang GUI Login
-            scene = new Scene(fXMLLoader.load());
-            LoginController loginController = fXMLLoader.getController();
-            loginController.setStage(stage);
-            loginController.init();
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "LoginView.fxml";
             
-            setSceneMoveable();
+            LoginController controller = new LoginController();
+
+            controller.setStage(stage);
+            controller.loadFXMLAndSetScene(filePath, controller);
+            controller.init();
+            //Set scene cho stage và show
             
-            stage.setScene(scene);  
+            controller.showFXML();
         } catch (IOException ex) {
             showAlert(Alert.AlertType.ERROR, "Can't open login");
         }

@@ -1,14 +1,12 @@
 package com.noteapp.controller;
 
 import com.noteapp.dao.DAOException;
-import com.noteapp.model.dto.Note;
-import com.noteapp.model.dto.NoteBlock;
-import com.noteapp.model.dto.NoteFilter;
-import com.noteapp.model.dto.User;
-import com.noteapp.service.server.GetAllNotesService;
-import com.noteapp.service.server.OpenLastNoteService;
-import com.noteapp.service.server.OpenNoteService;
-import com.noteapp.service.server.SaveNoteService;
+import com.noteapp.model.Note;
+import com.noteapp.model.NoteBlock;
+import com.noteapp.model.NoteFilter;
+import com.noteapp.model.TextBlock;
+import com.noteapp.model.User;
+import com.noteapp.service.server.ServerServiceException;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -76,10 +74,7 @@ public class EditNoteViewController extends Controller {
     
     private User myUser;
     private Note myNote;
-    private List<BlockController> myNoteBlockControllers;
-    private Map<String, List<NoteBlock>> blockByHeaders;
-    private Timer updateTimer;
-    private TimerTask updateTask;
+    private List<TextBlockController> myNoteBlockControllers;
 
     public void setMyUser(User myUser) {
         this.myUser = myUser;
@@ -91,6 +86,7 @@ public class EditNoteViewController extends Controller {
     
     @Override
     public void init() {
+        initServerService();
         myNoteBlockControllers = new ArrayList<>();
         initView();
         closeButton.setOnAction((ActionEvent event) -> {
@@ -109,7 +105,7 @@ public class EditNoteViewController extends Controller {
             addFilter();
         });
         addTextBlockButton.setOnAction((ActionEvent event) -> {
-            NoteBlock newBlock = new NoteBlock();
+            TextBlock newBlock = new TextBlock();
             newBlock.setOrder(myNoteBlockControllers.size() + 1);
             newBlock.setHeader("Block " + newBlock.getOrder() + " of " + myNote.getHeader());
             newBlock.setEditor(myUser.getUsername());
@@ -119,69 +115,15 @@ public class EditNoteViewController extends Controller {
     }
     
     protected void initView() {       
-        if(myNote.isDefaultValue()) {
-            try {
-                noteService = new OpenLastNoteService(myUser.getUsername());
-                myNote = noteService.execute();
-            } catch (DAOException ex) {
-                myNote = new Note();
-                myNote.setAuthor(myUser.getUsername());
-                myNote.setHeader("NewNote");
-            }
-        }
         noteHeaderLabel.setText(myNote.getHeader());
         loadFilter(myNote.getFilters(), 8);
         blocksLayout.getChildren().clear();
         List<NoteBlock> blocks = myNote.getBlocks();
-        blockByHeaders = new HashMap<>();
-        
         for(int i=0; i<blocks.size(); i++) {
-            NoteBlock newBlock = blocks.get(i);
-            if(!blockByHeaders.containsKey(newBlock.getHeader())) {
-                blockByHeaders.put(newBlock.getHeader(), new ArrayList<>());
-                
-            }
-            blockByHeaders.get(newBlock.getHeader()).add(newBlock);
-        }
-        for(int i=0; i<blocks.size(); i++) {
-            NoteBlock newBlock = blocks.get(i);
-            if(newBlock.getEditor().equals(myUser.getUsername())) {
-                addBlock(newBlock);
+            if(blocks.get(i).getBlockType() == NoteBlock.BlockType.TEXT) {
+                addBlock((TextBlock) blocks.get(i));
             }
         }
-    }
-    
-    public void setOnAutoUpdate() {
-        updateTimer = new Timer();
-        updateTask = new TimerTask() {
-            @Override
-            public void run() {
-                Platform.runLater(() -> {
-                    try {
-                        noteService = new OpenNoteService(myNote.getId());
-                        myNote = noteService.execute();
-                        noteHeaderLabel.setText(myNote.getHeader());
-                        loadFilter(myNote.getFilters(), 8);
-                        List<NoteBlock> blocks = myNote.getBlocks();
-                        Map<String, List<NoteBlock>> newBlockByHeaders = new HashMap<>();
-                        for(int i=0; i<blocks.size(); i++) {
-                            NoteBlock newBlock = blocks.get(i);
-                            if(!newBlockByHeaders.containsKey(newBlock.getHeader())) {
-                                newBlockByHeaders.put(newBlock.getHeader(), new ArrayList<>());
-                            }
-                            newBlockByHeaders.get(newBlock.getHeader()).add(newBlock);
-                        }
-                        checkOtherEditChange(newBlockByHeaders);
-                        blockByHeaders = newBlockByHeaders;
-                        updateBlock();
-                        System.out.println(System.currentTimeMillis());
-                    } catch (DAOException ex) {
-                        System.err.println(ex.getMessage());
-                    }
-                });
-            }
-        };
-        updateTimer.scheduleAtFixedRate(updateTask, 2000, 4000);
     }
     
     @Override
@@ -200,9 +142,7 @@ public class EditNoteViewController extends Controller {
         confirm.ifPresent(newNoteHeader -> {
             //Lấy tất cả các Note của myUser
             try { 
-                noteCollectionService = new GetAllNotesService(myUser.getUsername());
-                //Lấy thành công
-                List<Note> myNotes = noteCollectionService.execute();
+                List<Note> myNotes = noteService.getAll(myUser.getUsername());
                 for(Note note: myNotes) {
                     if(note.getHeader().equals(newNoteHeader)) {
                         showAlert(Alert.AlertType.ERROR, "This header exist");
@@ -211,7 +151,7 @@ public class EditNoteViewController extends Controller {
                 }
                 //Thiết lập note name vừa nhập cho Label   
                 noteHeaderLabel.setText(newNoteHeader);
-            } catch (DAOException ex) {
+            } catch (ServerServiceException ex) {
                 showAlert(Alert.AlertType.ERROR, ex.getMessage());
             }
         });
@@ -219,111 +159,47 @@ public class EditNoteViewController extends Controller {
     
     protected void saveMyNote() {
         myNote.setHeader(noteHeaderLabel.getText());
-        myNote.setLastModified(1);
         myNote.setLastModifiedDate(Date.valueOf(LocalDate.now()));
         myNote.getBlocks().clear();
         for(int i=0; i<myNoteBlockControllers.size(); i++) {
-            NoteBlock block = myNoteBlockControllers.get(i).getNoteBlock();
+            TextBlock block = myNoteBlockControllers.get(i).getTextBlock();
             block.setContent(myNoteBlockControllers.get(i).getTextFromView());
             block.setOrder(i+1);
             myNote.getBlocks().add(block);
         }
-        for(String blockHeader: blockByHeaders.keySet()) {
-            for(NoteBlock block: blockByHeaders.get(blockHeader)) {
-                if(!block.getEditor().equals(myUser.getUsername())) {
-                    myNote.getBlocks().add(block);
-                }
-            }
-        }
         try {
-            noteService = new SaveNoteService(myNote);
-            noteService.execute();
+            noteService.save(myNote);
             showAlert(Alert.AlertType.INFORMATION, "Successfully save for " + myNote.getHeader());
-        } catch (DAOException ex) {
+        } catch (ServerServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }
     
-    protected void addBlock(NoteBlock newBlock) {
+    protected void addBlock(TextBlock newTextBlock) {
+        String filePath = Controller.DEFAULT_FXML_RESOURCE + "TextBlockView.fxml";
         try {
-            FXMLLoader loader = new FXMLLoader();
-            String blockViewPath = "/com/noteapp/view/BlockView.fxml";
-            loader.setLocation(getClass().getResource(blockViewPath));
+            TextBlockController controller = new TextBlockController();
+            controller.setTextBlock(newTextBlock);
             
-            VBox box = loader.load();
-            BlockController controller = loader.getController();
-            controller.init();
-            controller.setNoteBlock(newBlock);
-            controller.setTextForView(NoteBlock.TextContentConverter.convertToObjectText(newBlock.getContent()));
             controller.setNoteId(myNote.getId());
-            controller.setHeader(newBlock.getHeader());
+            
+            
+            VBox box = controller.loadFXML(filePath, controller);
+            controller.init();
+            controller.setTextForView(newTextBlock.getContent());
+            controller.setHeader(newTextBlock.getHeader());
             
             controller.getDeleteButton().setOnAction((ActionEvent event) -> {
-                int idxToDelete = controller.getNoteBlock().getOrder()-1;
+                int idxToDelete = controller.getTextBlock().getOrder()-1;
                 blocksLayout.getChildren().remove(idxToDelete);
                 myNote.getBlocks().remove(idxToDelete);
                 myNoteBlockControllers.remove(idxToDelete);
-            });
-            
-            List<String> otherEditors = new ArrayList<>();
-            for(NoteBlock noteBlock: blockByHeaders.get(newBlock.getHeader())) {
-                if(!noteBlock.getEditor().equals(newBlock.getEditor())) {
-                    otherEditors.add(noteBlock.getEditor());
-                }
-            }
-            controller.setOtherEditors(otherEditors);
-            controller.initOtherEditComboBox();
-            controller.getSwitchToOther().setOnAction((ActionEvent event) -> {
-                String otherEditor = controller.getOtherEditor();
-                System.out.println(otherEditor);
-                NoteBlock otherNoteBlock = new NoteBlock();
-                for(NoteBlock noteBlock: blockByHeaders.get(newBlock.getHeader())) {
-                    if(noteBlock.getEditor().equals(otherEditor)) {
-                        otherNoteBlock = noteBlock;
-                    }
-                }
-                controller.setTextForArea(NoteBlock.TextContentConverter.convertToObjectText(otherNoteBlock.getContent()));
-                controller.saveEditedText();
-                controller.initOtherEditComboBox();
             });
              
             blocksLayout.getChildren().add(box);
             myNoteBlockControllers.add(controller);
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
-        }
-    }
-    
-    protected void updateBlock() {
-        for(int i=0; i<myNoteBlockControllers.size(); i++) {
-            NoteBlock thisBlock = myNoteBlockControllers.get(i).getNoteBlock();
-            List<String> otherEditors = new ArrayList<>();
-            for(NoteBlock noteBlock: blockByHeaders.get(thisBlock.getHeader())) {
-                if(!noteBlock.getEditor().equals(thisBlock.getEditor())) {
-                    otherEditors.add(noteBlock.getEditor());
-                }
-            }
-            myNoteBlockControllers.get(i).setOtherEditors(otherEditors);
-            myNoteBlockControllers.get(i).initOtherEditComboBox();
-        }
-    }
-    
-    protected void checkOtherEditChange(Map<String, List<NoteBlock>> newBlockByHeaders) {
-        for(int i=0; i<myNoteBlockControllers.size(); i++) {
-            String header = myNoteBlockControllers.get(i).getNoteBlock().getHeader();
-            List<NoteBlock> oldBlocks = blockByHeaders.get(header);
-            List<NoteBlock> newBlocks = newBlockByHeaders.get(header);
-            List<String> hadModifiedEditors = new ArrayList<>();
-            for(NoteBlock oldBlock: oldBlocks) {
-                for(NoteBlock newBlock: newBlocks) {
-                    if(oldBlock.getEditor().equals(newBlock.getEditor()) && 
-                            (!oldBlock.getContent().equals(newBlock.getContent()))) {
-                        System.out.println(oldBlock.getContent() +":::" +newBlock.getContent());
-                        hadModifiedEditors.add(oldBlock.getEditor());
-                    }
-                }
-            }
-            myNoteBlockControllers.get(i).setChangeNotify(hadModifiedEditors);
         }
     }
     
@@ -362,18 +238,15 @@ public class EditNoteViewController extends Controller {
         filterGridLayout.setHgap(8);
         filterGridLayout.setVgap(8);
         //Thiết lập filter layout
+        String filePath = Controller.DEFAULT_FXML_RESOURCE + "NoteFiltersView.fxml";
         try {
             for(int i = 0; i < filters.size(); i++) {
-                //Load filter FXML
-                FXMLLoader fXMLLoader = new FXMLLoader();
-                String filterFXMLPath = "/com/noteapp/view/NoteFiltersView.fxml";
-                fXMLLoader.setLocation(getClass().getResource(filterFXMLPath));
-                HBox hbox = fXMLLoader.load();
+                NoteFiltersController controller = new NoteFiltersController();
+                HBox hbox = controller.loadFXML(filePath, controller);
                 //Thiết lập dữ liệu cho filter
-                NoteFiltersController filterFXMLController = fXMLLoader.getController();
-                filterFXMLController.setData(filters.get(i).getFilterContent());
-                filterFXMLController.getRemoveFilterView().setOnMouseClicked(event -> {
-                    myNote.getFilters().remove(new NoteFilter(filterFXMLController.getFilter()));
+                controller.setData(filters.get(i).getFilterContent());
+                controller.getRemoveFilterView().setOnMouseClicked(event -> {
+                    myNote.getFilters().remove(new NoteFilter(controller.getFilter()));
                     loadFilter(myNote.getFilters(), 8);
                 });
                 //Chuyển hàng
@@ -390,24 +263,18 @@ public class EditNoteViewController extends Controller {
     }
     
     protected void openDashboard(User user) {
-        updateTask.cancel();
-        updateTimer.cancel();
         try {
-            FXMLLoader fXMLLoader = new FXMLLoader();
-            String dashboardViewPath = "/com/noteapp/view/DashboardView.fxml";
-            fXMLLoader.setLocation(getClass().getResource(dashboardViewPath));
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "DashboardView.fxml";
+            
+            DashboardController controller = new DashboardController();
 
-            scene = new Scene(fXMLLoader.load());
-
-            DashboardController controller = fXMLLoader.getController();
             controller.setStage(stage);
             controller.setMyUser(myUser);
-            controller.setCurrentNote(myNote);
+            controller.loadFXMLAndSetScene(filePath, controller);
             controller.init();
-
-            setSceneMoveable();
-
-            stage.setScene(scene);
+            //Set scene cho stage và show
+            
+            controller.showFXML();
         } catch (IOException ex) {
         showAlert(Alert.AlertType.ERROR, "Can't open dashboard");
         }
