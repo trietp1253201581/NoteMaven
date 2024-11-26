@@ -365,8 +365,9 @@ public class DashboardController extends Controller {
             try {
                 //Thiết lập dữ liệu cho Note Card
                 NoteCardController controller = new NoteCardController();
-                controller.setData(notes.get(i));
+                
                 HBox box = controller.loadFXML(filePath, controller);
+                controller.setData(shareNotes.get(i));
                 //Xử lý khi nhấn vào note card
                 box.setOnMouseClicked((MouseEvent event) -> {
                     //Tạo thông báo và mở note nếu chọn OK
@@ -376,9 +377,9 @@ public class DashboardController extends Controller {
                         try {
                             //Lấy thành công
                             int noteId = controller.getId();
-                            currentNote = noteService.open(noteId);
+                            currentNote = shareNoteService.open(noteId, controller.getEditor());
                             //Load lại Edit Scene và mở Edit Scene
-                            openEditNoteView(myUser, currentNote);
+                            openEditShareNoteView(myUser, (ShareNote) currentNote);
                         } catch (ServerServiceException ex) {
                             showAlert(Alert.AlertType.ERROR, ex.getMessage());
                         }
@@ -659,11 +660,31 @@ public class DashboardController extends Controller {
         }
     }
     
+    protected void openEditShareNoteView(User user, ShareNote shareNote) {
+        try {
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "EditNoteView.fxml";
+            
+            EditShareNoteController controller = new EditShareNoteController();
+
+            controller.setStage(stage);
+            controller.setMyUser(user);
+            controller.setMyNote(shareNote);
+            controller.setMyShareNote(shareNote);
+            controller.loadFXMLAndSetScene(filePath, controller);
+            controller.init();
+            //Set scene cho stage và show
+            
+            controller.showFXML();
+        } catch (IOException ex) {
+            showAlert(Alert.AlertType.ERROR, "Can't open view");
+        }
+    }
+    
     protected void openEditNoteView(User user, Note note) {
         try {
             String filePath = Controller.DEFAULT_FXML_RESOURCE + "EditNoteView.fxml";
             
-            EditNoteViewController controller = new EditNoteViewController();
+            EditNoteController controller = new EditNoteController();
 
             controller.setStage(stage);
             controller.setMyUser(user);

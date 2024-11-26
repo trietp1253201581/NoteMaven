@@ -7,7 +7,11 @@ import com.noteapp.dao.NotExistDataException;
 import com.noteapp.dao.ShareNoteDAO;
 import com.noteapp.model.Note;
 import com.noteapp.model.NoteBlock;
+import static com.noteapp.model.NoteBlock.BlockType.SURVEY;
+import static com.noteapp.model.NoteBlock.BlockType.TEXT;
 import com.noteapp.model.ShareNote;
+import com.noteapp.model.SurveyBlock;
+import com.noteapp.model.TextBlock;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +51,17 @@ public class ShareNoteService extends NoteService {
             for(NoteBlock noteBlock: authorBlocks) {
                 NoteBlock thisEditorBlock = noteBlock;
                 thisEditorBlock.setEditor(shareNote.getEditor());
-                super.createBlock(note.getId(), thisEditorBlock);
+                switch (thisEditorBlock.getBlockType()) {
+                    case TEXT -> {
+                        TextBlock newTextBlock = (TextBlock) thisEditorBlock;
+                        textBlockDAO.create(newTextBlock);
+                    }
+                    case SURVEY -> {
+                        SurveyBlock newSurveyBlock = (SurveyBlock) thisEditorBlock;
+                        surveyBlockDAO.create(newSurveyBlock);
+                    }
+
+                }
             }
             shareNoteDAO.create(shareNote);
             return this.open(shareNote.getId(), shareNote.getEditor());

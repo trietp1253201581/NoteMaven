@@ -74,8 +74,8 @@ public class ShareNote extends Note {
         this.otherEditorBlocks = otherEditorBlocks;
     }
     
-    public List<NoteBlock> getOtherEditorBlocksOf(String editor) {
-        return otherEditorBlocks.get(editor);
+    public List<NoteBlock> getOtherEditorBlocksOf(String header) {
+        return otherEditorBlocks.get(header);
     }
     
     public void setOtherEditorBlocksOf(String editor, List<NoteBlock> otherEditorBlocksOf) {
@@ -83,11 +83,11 @@ public class ShareNote extends Note {
     }
     
     public void addOtherEditorBlock(NoteBlock otherEditorBlock) {
-        String blockEditor = otherEditorBlock.getEditor();
-        if(!otherEditorBlocks.containsKey(blockEditor)) {
-            otherEditorBlocks.put(blockEditor, new ArrayList<>());
+        String blockHeader = otherEditorBlock.getHeader();
+        if(!otherEditorBlocks.containsKey(blockHeader)) {
+            otherEditorBlocks.put(blockHeader, new ArrayList<>());
         }
-        otherEditorBlocks.get(blockEditor).add(otherEditorBlock);
+        otherEditorBlocks.get(blockHeader).add(otherEditorBlock);
     }
 
     @Override

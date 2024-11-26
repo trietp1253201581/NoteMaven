@@ -1,6 +1,5 @@
 package com.noteapp.controller;
 
-import com.noteapp.dao.DAOException;
 import com.noteapp.model.Note;
 import com.noteapp.model.NoteBlock;
 import com.noteapp.model.NoteFilter;
@@ -11,17 +10,10 @@ import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Timer;
-import java.util.TimerTask;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
@@ -39,42 +31,42 @@ import javafx.scene.layout.VBox;
  *
  * @author admin
  */
-public class EditNoteViewController extends Controller {
+public class EditNoteController extends Controller {
     //Các thuộc tính chung
     @FXML 
-    private Label noteHeaderLabel;
+    protected Label noteHeaderLabel;
     @FXML
-    private Button homeMenuButton;
+    protected Button homeMenuButton;
     @FXML
-    private Button editMenuButton;
+    protected Button editMenuButton;
     @FXML
-    private HBox editBox;
+    protected HBox editBox;
     //Các thuộc tính của edit Box
     @FXML
-    private Button saveNoteButton;
+    protected Button saveNoteButton;
     @FXML
-    private Button openNoteButton;
+    protected Button openNoteButton;
     @FXML 
-    private Button addFilterButton;
+    protected Button addFilterButton;
     @FXML
     private Button addTextBlockButton;
     @FXML
-    private ComboBox<String> fontTypeComboBox; 
+    protected ComboBox<String> fontTypeComboBox; 
     @FXML
-    private ComboBox<String> fontSizeComboBox;
+    protected ComboBox<String> fontSizeComboBox;
     @FXML
-    private ColorPicker colorPicker;
+    protected ColorPicker colorPicker;
     //Các thuộc tính còn lại
     @FXML
-    private VBox blocksLayout;
+    protected VBox blocksLayout;
     @FXML
-    private GridPane filterGridLayout;
+    protected GridPane filterGridLayout;
     @FXML
-    private Button closeButton;
+    protected Button closeButton;
     
-    private User myUser;
-    private Note myNote;
-    private List<TextBlockController> myNoteBlockControllers;
+    protected User myUser;
+    protected Note myNote;
+    protected List<TextBlockController> textBlockControllers;
 
     public void setMyUser(User myUser) {
         this.myUser = myUser;
@@ -87,7 +79,7 @@ public class EditNoteViewController extends Controller {
     @Override
     public void init() {
         initServerService();
-        myNoteBlockControllers = new ArrayList<>();
+        textBlockControllers = new ArrayList<>();
         initView();
         closeButton.setOnAction((ActionEvent event) -> {
             close();
@@ -106,7 +98,7 @@ public class EditNoteViewController extends Controller {
         });
         addTextBlockButton.setOnAction((ActionEvent event) -> {
             TextBlock newBlock = new TextBlock();
-            newBlock.setOrder(myNoteBlockControllers.size() + 1);
+            newBlock.setOrder(textBlockControllers.size() + 1);
             newBlock.setHeader("Block " + newBlock.getOrder() + " of " + myNote.getHeader());
             newBlock.setEditor(myUser.getUsername());
             newBlock.setContent("Edit here");
@@ -117,6 +109,10 @@ public class EditNoteViewController extends Controller {
     protected void initView() {       
         noteHeaderLabel.setText(myNote.getHeader());
         loadFilter(myNote.getFilters(), 8);
+        initBlock();
+    }
+    
+    protected void initBlock() {
         blocksLayout.getChildren().clear();
         List<NoteBlock> blocks = myNote.getBlocks();
         for(int i=0; i<blocks.size(); i++) {
@@ -161,9 +157,9 @@ public class EditNoteViewController extends Controller {
         myNote.setHeader(noteHeaderLabel.getText());
         myNote.setLastModifiedDate(Date.valueOf(LocalDate.now()));
         myNote.getBlocks().clear();
-        for(int i=0; i<myNoteBlockControllers.size(); i++) {
-            TextBlock block = myNoteBlockControllers.get(i).getTextBlock();
-            block.setContent(myNoteBlockControllers.get(i).getTextFromView());
+        for(int i=0; i<textBlockControllers.size(); i++) {
+            TextBlock block = textBlockControllers.get(i).getTextBlock();
+            block.setContent(textBlockControllers.get(i).getTextFromView());
             block.setOrder(i+1);
             myNote.getBlocks().add(block);
         }
@@ -193,11 +189,11 @@ public class EditNoteViewController extends Controller {
                 int idxToDelete = controller.getTextBlock().getOrder()-1;
                 blocksLayout.getChildren().remove(idxToDelete);
                 myNote.getBlocks().remove(idxToDelete);
-                myNoteBlockControllers.remove(idxToDelete);
+                textBlockControllers.remove(idxToDelete);
             });
              
             blocksLayout.getChildren().add(box);
-            myNoteBlockControllers.add(controller);
+            textBlockControllers.add(controller);
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
         }

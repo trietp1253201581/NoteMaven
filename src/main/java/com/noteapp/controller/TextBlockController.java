@@ -42,7 +42,7 @@ public class TextBlockController extends Controller {
     private int noteId;
     private TextBlock textBlock;
     private boolean isEditing;
-    private List<String> otherEditors;
+    private List<TextBlock> otherEditors;
     
     @Override
     public void init() {
@@ -72,8 +72,8 @@ public class TextBlockController extends Controller {
         if(otherEditors.isEmpty()) {
             return;
         }
-        for(String otherEditor: otherEditors) {
-            otherEditComboBox.getItems().add(otherEditor);
+        for(TextBlock otherEditor: otherEditors) {
+            otherEditComboBox.getItems().add(otherEditor.getEditor());
         }
     }
     
@@ -94,7 +94,7 @@ public class TextBlockController extends Controller {
         this.isEditing = isEditing;
     }
 
-    public void setOtherEditors(List<String> otherEditors) {
+    public void setOtherEditors(List<TextBlock> otherEditors) {
         this.otherEditors = otherEditors;
     }
 
@@ -138,8 +138,12 @@ public class TextBlockController extends Controller {
         return isEditing;
     }
 
-    public List<String> getOtherEditors() {
+    public List<TextBlock> getOtherEditors() {
         return otherEditors;
+    }
+    
+    public String getOtherEditor() {
+        return otherEditComboBox.getSelectionModel().getSelectedItem();
     }
     
     public String getTextFromView() {

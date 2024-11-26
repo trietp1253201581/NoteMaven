@@ -1,3 +1,4 @@
+F:\NoteMaven\src\main\java\com\noteapp\controller\SurveyItemController.java
 F:\NoteMaven\src\main\java\com\noteapp\dao\connection\DatabaseConnection.java
 F:\NoteMaven\src\main\java\com\noteapp\model\TextBlock.java
 F:\NoteMaven\src\main\java\com\noteapp\service\server\ServerServiceException.java
@@ -29,11 +30,13 @@ F:\NoteMaven\src\main\java\com\noteapp\dao\NoteDAO.java
 F:\NoteMaven\src\main\java\com\noteapp\dao\UnsupportedQueryException.java
 F:\NoteMaven\src\main\java\com\noteapp\dao\TextBlockDAO.java
 F:\NoteMaven\src\main\java\com\noteapp\controller\DashboardController.java
+F:\NoteMaven\src\main\java\com\noteapp\controller\EditNoteController.java
+F:\NoteMaven\src\main\java\com\noteapp\controller\SurveyBlockController.java
+F:\NoteMaven\src\main\java\com\noteapp\controller\EditShareNoteController.java
 F:\NoteMaven\src\main\java\com\noteapp\dao\DAO.java
 F:\NoteMaven\src\main\java\com\noteapp\dao\UserDAO.java
 F:\NoteMaven\src\main\java\com\noteapp\service\security\VerificationCodeService.java
 F:\NoteMaven\src\main\java\com\noteapp\model\NoteFilter.java
-F:\NoteMaven\src\main\java\com\noteapp\controller\EditNoteViewController.java
 F:\NoteMaven\src\main\java\com\noteapp\model\Note.java
 F:\NoteMaven\src\main\java\com\noteapp\model\ShareNote.java
 F:\NoteMaven\src\main\java\com\noteapp\dao\NoteFilterDAO.java
