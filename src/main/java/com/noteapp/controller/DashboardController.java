@@ -672,6 +672,7 @@ public class DashboardController extends Controller {
             controller.setMyShareNote(shareNote);
             controller.loadFXMLAndSetScene(filePath, controller);
             controller.init();
+            controller.setOnAutoUpdate();
             //Set scene cho stage và show
             
             controller.showFXML();

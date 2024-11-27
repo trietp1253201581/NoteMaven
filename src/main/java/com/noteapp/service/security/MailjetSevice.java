@@ -22,7 +22,7 @@ public class MailjetSevice implements MailService {
     private static final String BASE_URL = "https://api.mailjet.com";
     private static final ClientOptions CLIENT_OPTIONS;
     protected static final String EMAIL_ADDRESS = "trietkd1475369@gmail.com";
-    protected static final String EMAIL_NAME = "Lê Minh Triết";
+    protected static final String EMAIL_NAME = "NoteApp Support";
     protected Email fromEmail;
     
     static {

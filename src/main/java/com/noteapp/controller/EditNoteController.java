@@ -174,14 +174,12 @@ public class EditNoteController extends Controller {
     protected void addBlock(TextBlock newTextBlock) {
         String filePath = Controller.DEFAULT_FXML_RESOURCE + "TextBlockView.fxml";
         try {
-            TextBlockController controller = new TextBlockController();
-            controller.setTextBlock(newTextBlock);
-            
-            controller.setNoteId(myNote.getId());
-            
+            TextBlockController controller = new TextBlockController();        
             
             VBox box = controller.loadFXML(filePath, controller);
             controller.init();
+            controller.setTextBlock(newTextBlock);
+            controller.setNoteId(myNote.getId());
             controller.setTextForView(newTextBlock.getContent());
             controller.setHeader(newTextBlock.getHeader());
             

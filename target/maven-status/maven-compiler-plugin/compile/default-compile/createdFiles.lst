@@ -65,6 +65,7 @@ com\noteapp\model\User$Gender.class
 com\noteapp\service\security\MailjetSevice.class
 com\noteapp\model\Email.class
 com\noteapp\model\TextBlock.class
+com\noteapp\controller\EditShareNoteController$1.class
 com\noteapp\service\server\ServerServiceException.class
 com\noteapp\controller\EditNoteController.class
 com\noteapp\dao\NoteFilterDAO$SingletonHelper.class

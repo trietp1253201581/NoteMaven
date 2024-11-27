@@ -1,6 +1,7 @@
 package com.noteapp.controller;
 
 import com.noteapp.model.TextBlock;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javafx.event.ActionEvent;
@@ -93,8 +94,24 @@ public class TextBlockController extends Controller {
     public void setIsEditing(boolean isEditing) {
         this.isEditing = isEditing;
     }
-
+    
     public void setOtherEditors(List<TextBlock> otherEditors) {
+        this.otherEditors = otherEditors;
+    }
+
+    public void updateOtherEditors(List<TextBlock> otherEditors) {
+        List<String> hadModifiedEditor = new ArrayList<>();
+        for (TextBlock oldBlock: this.otherEditors) {
+            for (TextBlock newBlock: otherEditors) {
+                boolean sameEditor = oldBlock.getEditor().equals(newBlock.getEditor());
+                boolean sameContent = oldBlock.getContent().equals(newBlock.getContent());
+                if (sameEditor && (!sameContent)) {
+                    hadModifiedEditor.add(newBlock.getEditor());
+                }
+            }
+        }
+
+        setChangeNotify(hadModifiedEditor);
         this.otherEditors = otherEditors;
     }
 
