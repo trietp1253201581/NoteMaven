@@ -3,36 +3,42 @@ package com.noteapp.model;
 import java.util.Objects;
 
 /**
- *
- * @author admin
+ * Một transfer cho dữ liệu của các filter của 1 note
+ * @author Nhóm 17
+ * @version 1.0
  */
 public class NoteFilter extends DTO {
-    private String filterContent;
+    private String filter;
 
     public NoteFilter() {
-        this.filterContent = "";
+        this.filter = "";
     }
 
-    public NoteFilter(String filterContent) {
-        this.filterContent = filterContent;
+    public NoteFilter(String filter) {
+        this.filter = filter;
     }
 
-    public String getFilterContent() {
-        return filterContent;
+    public String getFilter() {
+        return filter;
     }
 
-    public void setFilterContent(String filterContent) {
-        this.filterContent = filterContent;
+    public void setFilter(String filter) {
+        this.filter = filter;
     }
 
+    /**
+     * Kiểm tra một {@link NoteFilter} có mang giá trị mặc định không
+     * @return {@code true} nếu filter là một chuỗi rỗng, ngược lại là {@code false}
+     */
+    @Override
     public boolean isDefaultValue() {
-        return "".equals(this.filterContent);
+        return "".equals(this.filter);
     }
 
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 67 * hash + Objects.hashCode(this.filterContent);
+        hash = 67 * hash + Objects.hashCode(this.filter);
         return hash;
     }
 
@@ -48,12 +54,12 @@ public class NoteFilter extends DTO {
             return false;
         }
         final NoteFilter other = (NoteFilter) obj;
-        return Objects.equals(this.filterContent, other.filterContent);
+        return Objects.equals(this.filter, other.filter);
     }
 
     @Override
     public String toString() {
-        return "NoteFilter{" + "filterContent=" + filterContent + '}';
+        return "NoteFilter{" + "filte=" + filter + '}';
     }
 
 }

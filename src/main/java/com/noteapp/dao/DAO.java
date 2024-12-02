@@ -8,11 +8,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Định nghĩa các phương thức thao tác cơ bản với CSDL
- * @author Nhóm 23
- * @param <T> Kiểu datatransfer cho data từ CSDL
- * @since 30/03/2024
+ * Data Access Object.
+ * Một Object giúp chuyển đổi CSDL từ hệ QT CSDL
+ * sang ứng dụng
+ * @author Nhóm 17
+ * @param <T> Một class con của {@link DTO}
  * @version 1.0
+ * @see DTO
  */
 public abstract class DAO<T extends DTO> {
     protected Connection connection;
@@ -20,7 +22,7 @@ public abstract class DAO<T extends DTO> {
     protected Map<String, String> enableQueries;
     protected String sqlFileName;
     
-    protected static final String PACKAGE_PATH = "src/main/java/com/noteapp/db/";
+    protected static final String DEFAULT_SQL_DIR = "src/main/java/com/noteapp/db/";
 
     protected static final String DATABASE_HOST = "localhost";  
     protected static final int DATABASE_PORT = 3306;
@@ -28,6 +30,9 @@ public abstract class DAO<T extends DTO> {
     protected static final String DATABASE_USERNAME = "root";
     protected static final String DATABASE_PASSWORD = "Asensio1234@";
         
+    /**
+     * Các loại Query được phép sử dụng
+     */
     protected static enum QueriesType {
         GET_ALL, GET_ALL_REFER, 
         GET, 
@@ -36,6 +41,10 @@ public abstract class DAO<T extends DTO> {
         DELETE, DELETE_ALL;
     }
     
+    /**
+     * Khởi tạo Connection tới hệ quản trị CSDL
+     * @see DatabaseConnection
+     */
     protected void initConnection() {
         String host = DATABASE_HOST;
         int port = DATABASE_PORT;
@@ -47,11 +56,23 @@ public abstract class DAO<T extends DTO> {
         this.connection = databaseConnection.getConnection();
     }
     
+    /**
+     * Lấy các query từ các file SQL tương ứng.
+     * @see DatabaseConnection#readSQL
+     */
     protected void initEnableQueries() {
-        databaseConnection.readSQL(PACKAGE_PATH + sqlFileName);
+        databaseConnection.readSQL(DEFAULT_SQL_DIR + sqlFileName);
         this.enableQueries = databaseConnection.getEnableQueries();
     }
     
+    /**
+     * Lấy một bản ghi từ CSDL sử dụng key
+     * @param key key tương ứng cho từng loại dữ liệu
+     * @return {@link DTO} tương ứng của bản ghi
+     * @throws DAOException nếu không thể thực hiện truy vấn 
+     * hoặc dữ liệu không tồn tại
+     * @see DAOKey
+     */
     public abstract T get(DAOKey key) throws DAOException;
     
     public abstract T create(T element) throws DAOException;

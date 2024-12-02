@@ -15,11 +15,11 @@ FROM notes
 WHERE note_id = ?;
 
 --CREATE
-INSERT INTO notes(author, header, last_modified_date)
-VALUES (?, ?, ?);
+INSERT INTO notes(author, header, last_modified_date, is_public)
+VALUES (?, ?, ?, ?);
 
 --UPDATE
-UPDATE notes SET author = ?, header = ?, last_modified_date = ?
+UPDATE notes SET author = ?, header = ?, last_modified_date = ?, is_public = ?
 WHERE note_id = ?;
 
 --DELETE

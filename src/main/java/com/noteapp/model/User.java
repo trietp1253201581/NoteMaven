@@ -6,7 +6,7 @@ import java.util.Objects;
 
 /**
  * Một transfer cho dữ liệu của các user 
- * @author admin
+ * @author Nhóm 17
  * @version 1.0
  */
 public class User extends DTO {
@@ -111,6 +111,11 @@ public class User extends DTO {
         this.email = email;
     }
     
+    /**
+     * Kiểm tra một {@link User} có mang giá trị mặc định không
+     * @return {@code true} nếu username là một chuỗi rỗng, ngược lại là {@code false}
+     */
+    @Override
     public boolean isDefaultValue() {
         return "".equals(username);
     }
@@ -127,7 +132,7 @@ public class User extends DTO {
      * @param obj Object cần so sánh
      * @return {@code true} nếu obj là một thể hiện của User
      * và thuộc tính {@code username} của obj bằng với
-     * {@code username} của User
+     * {@code username} của User, {@code false} nếu ngược lại
      * @see hashCode()
      */
     @Override

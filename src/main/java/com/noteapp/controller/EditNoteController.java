@@ -49,7 +49,9 @@ public class EditNoteController extends Controller {
     @FXML 
     protected Button addFilterButton;
     @FXML
-    private Button addTextBlockButton;
+    protected Button addTextBlockButton;
+    @FXML
+    protected Button addSurveyBlockButton;
     @FXML
     protected ComboBox<String> fontTypeComboBox; 
     @FXML
@@ -160,7 +162,6 @@ public class EditNoteController extends Controller {
         for(int i=0; i<textBlockControllers.size(); i++) {
             TextBlock block = textBlockControllers.get(i).getTextBlock();
             block.setContent(textBlockControllers.get(i).getTextFromView());
-            block.setOrder(i+1);
             myNote.getBlocks().add(block);
         }
         try {
@@ -238,7 +239,7 @@ public class EditNoteController extends Controller {
                 NoteFiltersController controller = new NoteFiltersController();
                 HBox hbox = controller.loadFXML(filePath, controller);
                 //Thiết lập dữ liệu cho filter
-                controller.setData(filters.get(i).getFilterContent());
+                controller.setData(filters.get(i).getFilter());
                 controller.getRemoveFilterView().setOnMouseClicked(event -> {
                     myNote.getFilters().remove(new NoteFilter(controller.getFilter()));
                     loadFilter(myNote.getFilters(), 8);

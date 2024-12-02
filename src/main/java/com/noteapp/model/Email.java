@@ -5,16 +5,23 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *
- * @author admin
+ * Biểu diễn cho các Email dùng để gửi nhận
+ * @author Nhóm 17
+ * @version 1.0
  */
 public class Email {
     private String address;
     private String name;
     
+    protected static final String EMAIL_ADDRESS_PATTERN = "^([a-zA-Z0-9._]+)@([a-zA-Z0-9_.]+)\\.([a-zA-Z]{2,})$";
+    
     public Email() {
         this.address = "";
         this.name = "";
+    }
+
+    public Email(String address) {
+        this.address = address;
     }
 
     public Email(String address, String name) {
@@ -38,13 +45,21 @@ public class Email {
         this.name = name;
     }
     
+    /**
+     * Kiểm tra một {@link Email} có mang giá trị mặc định không
+     * @return {@code true} nếu address là một chuỗi rỗng, ngược lại là {@code false}
+     */
     public boolean isDefaultValue() {
         return "".equals(address);
     }
     
+    /**
+     * Kiểm tra địa chỉ Email của đối tượng {@link Email} này
+     * có hợp lệ không
+     * @return 
+     */
     public boolean checkEmailAddress() {
-        String emailAddStrPatern = "^([a-zA-Z0-9._]+)@([a-zA-Z0-9_.]+)\\.([a-zA-Z]{2,})$";
-        Pattern emailAddPattern = Pattern.compile(emailAddStrPatern);
+        Pattern emailAddPattern = Pattern.compile(EMAIL_ADDRESS_PATTERN);
         Matcher matcher = emailAddPattern.matcher(this.address);
         return matcher.matches();
     }
@@ -57,6 +72,14 @@ public class Email {
         return hash;
     }
 
+    /**
+     * So sánh một {@link Object} với {@link Email} này.
+     * @param obj Object cần so sánh
+     * @return {@code true} nếu obj là một thể hiện của Email
+     * và thuộc tính {@code address} của obj bằng với
+     * {@code address} của Note, {@code false} nếu ngược lại.
+     * @see hashCode()
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -65,18 +88,18 @@ public class Email {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (!(obj instanceof Email)) {
             return false;
         }
         final Email other = (Email) obj;
-        if (!Objects.equals(this.address, other.address)) {
-            return false;
-        }
-        return Objects.equals(this.name, other.name);
+        return Objects.equals(this.address, other.address);
     }
 
     @Override
     public String toString() {
-        return "Email{" + "address=" + address + ", name=" + name + '}';
+        return "Email{" + 
+                "address=" + address + 
+                ", name=" + name + 
+                '}';
     }
 }

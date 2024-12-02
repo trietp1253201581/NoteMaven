@@ -140,6 +140,7 @@ public class NoteService {
             saveBlocks(note.getId(), note.getBlocks());
             return note;
         } catch (DAOException exByUpdate) {
+            exByUpdate.printStackTrace();
             throw new ServerServiceException(exByUpdate.getMessage());
         }
     }

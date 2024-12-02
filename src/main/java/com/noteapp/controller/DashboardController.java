@@ -17,8 +17,6 @@ import java.util.List;
 import java.util.Optional;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -237,7 +235,7 @@ public class DashboardController extends Controller {
         });
         //Other
         backMainSceneButton.setOnAction((ActionEvent event) -> {
-            openEditNoteView(myUser, currentNote);
+            openEditView(myUser, currentNote);
         });
         logoutButton.setOnAction((ActionEvent event) -> {
             openLogin();
@@ -246,6 +244,7 @@ public class DashboardController extends Controller {
     
     public void initView() {
         userLabel.setText(myUser.getName());
+        currentNote = new Note();
         try {           
             myNotes = noteService.getAll(myUser.getUsername());
         } catch (ServerServiceException ex) {
@@ -270,7 +269,8 @@ public class DashboardController extends Controller {
                 NoteCardController controller = new NoteCardController();
                 
                 HBox box = controller.loadFXML(filePath, controller);
-                controller.setData(notes.get(i));
+                Note note = notes.get(i);
+                controller.setData(note);
                 //Xử lý khi nhấn vào note card
                 box.setOnMouseClicked((MouseEvent event) -> {
                     //Tạo thông báo và mở note nếu chọn OK
@@ -281,8 +281,16 @@ public class DashboardController extends Controller {
                             //Lấy thành công
                             int noteId = controller.getId();
                             currentNote = noteService.open(noteId);
+                            if (currentNote.isPubliced()) {
+                                currentNote = shareNoteService.open(noteId, myUser.getUsername());
+                                System.out.println(((ShareNote) currentNote).isPubliced());
+                                openEditView(myUser, (ShareNote) currentNote);
+                            } else {
+                                
+                                openEditView(myUser, currentNote);
+                            }
                             //Load lại Edit Scene và mở Edit Scene
-                            openEditNoteView(myUser, currentNote);
+                            
                         } catch (ServerServiceException ex) {
                             showAlert(Alert.AlertType.ERROR, ex.getMessage());
                         }
@@ -378,8 +386,9 @@ public class DashboardController extends Controller {
                             //Lấy thành công
                             int noteId = controller.getId();
                             currentNote = shareNoteService.open(noteId, controller.getEditor());
+                            
                             //Load lại Edit Scene và mở Edit Scene
-                            openEditShareNoteView(myUser, (ShareNote) currentNote);
+                            openEditView(myUser, (ShareNote) currentNote);
                         } catch (ServerServiceException ex) {
                             showAlert(Alert.AlertType.ERROR, ex.getMessage());
                         }
@@ -412,7 +421,7 @@ public class DashboardController extends Controller {
                 notes.add(newNote);
             } else {
                 for(NoteFilter noteFilter: newNote.getFilters()) {
-                    if(noteFilter.getFilterContent().contains(searchText)) {
+                    if(noteFilter.getFilter().contains(searchText)) {
                         notes.add(newNote);
                     }
                 }
@@ -628,6 +637,7 @@ public class DashboardController extends Controller {
             //Thông báo
             showAlert(Alert.AlertType.INFORMATION, "Successfully share");
         } catch (ServerServiceException ex) {
+            ex.printStackTrace();
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }
@@ -660,7 +670,7 @@ public class DashboardController extends Controller {
         }
     }
     
-    protected void openEditShareNoteView(User user, ShareNote shareNote) {
+    protected void openEditView(User user, ShareNote shareNote) {
         try {
             String filePath = Controller.DEFAULT_FXML_RESOURCE + "EditNoteView.fxml";
             
@@ -681,7 +691,7 @@ public class DashboardController extends Controller {
         }
     }
     
-    protected void openEditNoteView(User user, Note note) {
+    protected void openEditView(User user, Note note) {
         try {
             String filePath = Controller.DEFAULT_FXML_RESOURCE + "EditNoteView.fxml";
             

@@ -164,6 +164,7 @@ public class ShareNoteDAO extends DAO<ShareNote> {
             }
             return newShareNote;
         } catch (SQLException ex) {
+            ex.printStackTrace();
             throw new FailedExecuteException();
         }
     }

@@ -7,8 +7,7 @@ import java.util.List;
 
 /**
  * Một transfer cho dữ liệu của các note
- * @author Nhóm 23
- * @since 30/03/2024
+ * @author Nhóm 17
  * @version 1.0
  */
 public class Note extends DTO {
@@ -18,6 +17,7 @@ public class Note extends DTO {
     private List<NoteBlock> blocks;
     private Date lastModifiedDate;
     private List<NoteFilter> filters;
+    private boolean publiced;
 
     public Note() {
         this.id = -1;
@@ -26,6 +26,7 @@ public class Note extends DTO {
         this.blocks = new ArrayList<>();
         this.lastModifiedDate = Date.valueOf(LocalDate.MIN);
         this.filters = new ArrayList<>();
+        this.publiced = false;
     }
 
     public Note(String author, String header) {
@@ -35,6 +36,7 @@ public class Note extends DTO {
         this.blocks = new ArrayList<>();
         this.lastModifiedDate = Date.valueOf(LocalDate.MIN);
         this.filters = new ArrayList<>();
+        this.publiced = false;
     }
 
     public Note(int id, String author, String header, List<NoteBlock> blocks, Date lastModifiedDate, List<NoteFilter> filters) {
@@ -44,6 +46,7 @@ public class Note extends DTO {
         this.blocks = blocks;
         this.lastModifiedDate = lastModifiedDate;
         this.filters = filters;
+        this.publiced = false;
     }
 
     public int getId() {
@@ -93,7 +96,20 @@ public class Note extends DTO {
     public void setFilters(List<NoteFilter> filters) {
         this.filters = filters;
     }
+
+    public boolean isPubliced() {
+        return publiced;
+    }
+
+    public void setPubliced(boolean publiced) {
+        this.publiced = publiced;
+    }
     
+    /**
+     * Kiểm tra một {@link Note} có mang giá trị mặc định không
+     * @return {@code true} nếu id bằng -1, ngược lại là {@code false}
+     */
+    @Override
     public boolean isDefaultValue() {
         return id == -1;
     }
@@ -110,7 +126,7 @@ public class Note extends DTO {
      * @param obj Object cần so sánh
      * @return {@code true} nếu obj là một thể hiện của Note
      * và thuộc tính {@code noteId} của obj bằng với
-     * {@code noteId} của Note
+     * {@code noteId} của Note, {@code false} nếu ngược lại.
      * @see hashCode()
      */
     @Override
@@ -137,6 +153,7 @@ public class Note extends DTO {
                 ", blocks=" + blocks + 
                 ", lastModifiedDate=" + lastModifiedDate + 
                 ", filters=" + filters + 
+                ", publiced=" + publiced +
                 '}';
     }
 }

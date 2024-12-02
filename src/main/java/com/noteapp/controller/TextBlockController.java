@@ -84,7 +84,6 @@ public class TextBlockController extends Controller {
 
     public void setNoteId(int noteId) {
         this.noteId = noteId;
-        this.textBlock.setId(noteId);
     }
 
     public void setTextBlock(TextBlock textBlock) {

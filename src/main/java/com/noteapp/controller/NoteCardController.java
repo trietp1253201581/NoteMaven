@@ -89,14 +89,18 @@ public class NoteCardController extends Controller {
         author.setText(note.getAuthor());
         String filtersString = "";
         for(NoteFilter filter: note.getFilters()) {
-            filtersString += filter.getFilterContent() + ", ";
+            filtersString += filter.getFilter() + ", ";
         }
         if(filtersString.isEmpty()) {
             filters.setText(filtersString);
         } else {
             filters.setText(filtersString.substring(0, filtersString.length() - 2));
         }
-        shareStatus.setText("PRIVATE");
+        if(!note.isPubliced()) {
+            shareStatus.setText("PRIVATE");
+        } else {
+            shareStatus.setText("PUBLIC");
+        }
     }
     
     /**

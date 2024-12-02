@@ -18,7 +18,7 @@ public class NoteDAO extends DAO<Note> {
     protected static final String NOTE_QUERIES_FILE_NAME = "NoteQueries.sql";
 
     protected static enum ColumnName {
-        note_id, author, header, last_modified_date; 
+        note_id, author, header, last_modified_date, is_public; 
     }
 
 
@@ -66,6 +66,7 @@ public class NoteDAO extends DAO<Note> {
                 note.setAuthor(resultSet.getString(ColumnName.author.toString()));
                 note.setHeader(resultSet.getString(ColumnName.header.toString()));
                 note.setLastModifiedDate(resultSet.getDate(ColumnName.last_modified_date.toString()));
+                note.setPubliced(Boolean.parseBoolean(resultSet.getString(ColumnName.is_public.toString())));
                 //Thêm note vào list
                 notes.add(note);
             }
@@ -104,6 +105,7 @@ public class NoteDAO extends DAO<Note> {
                 note.setAuthor(resultSet.getString(ColumnName.author.toString()));
                 note.setHeader(resultSet.getString(ColumnName.header.toString()));
                 note.setLastModifiedDate(resultSet.getDate(ColumnName.last_modified_date.toString()));
+                note.setPubliced(Boolean.parseBoolean(resultSet.getString(ColumnName.is_public.toString())));
                 //Thêm note vào list
                 notes.add(note);
             }
@@ -141,6 +143,7 @@ public class NoteDAO extends DAO<Note> {
                 note.setAuthor(resultSet.getString(ColumnName.author.toString()));
                 note.setHeader(resultSet.getString(ColumnName.header.toString()));
                 note.setLastModifiedDate(resultSet.getDate(ColumnName.last_modified_date.toString()));
+                note.setPubliced(Boolean.parseBoolean(resultSet.getString(ColumnName.is_public.toString())));
             }
             if(note.isDefaultValue()) {
                 throw new NotExistDataException();
@@ -167,6 +170,7 @@ public class NoteDAO extends DAO<Note> {
             preparedStatement.setString(1, newNote.getAuthor());
             preparedStatement.setString(2, newNote.getHeader());
             preparedStatement.setDate(3, newNote.getLastModifiedDate());
+            preparedStatement.setString(4, String.valueOf(newNote.isPubliced()));
             
             if(preparedStatement.executeUpdate() <= 0) {
                 throw new FailedExecuteException();
@@ -200,12 +204,14 @@ public class NoteDAO extends DAO<Note> {
             preparedStatement.setString(1, note.getAuthor());
             preparedStatement.setString(2, note.getHeader());
             preparedStatement.setDate(3, note.getLastModifiedDate());
-            preparedStatement.setInt(4, note.getId());
+            preparedStatement.setString(4, String.valueOf(note.isPubliced()));
+            preparedStatement.setInt(5, note.getId());
             
             if(preparedStatement.executeUpdate() <= 0) {
                 throw new FailedExecuteException();
             }
         } catch (SQLException ex) {
+            ex.printStackTrace();
             throw new FailedExecuteException();
         }
     }

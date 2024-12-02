@@ -34,20 +34,26 @@ public class ShareNoteService extends NoteService {
         key.addKey("note_id", String.valueOf(note.getId()));
         key.addKey("editor", editor);
         ShareNote shareNote = new ShareNote();
-        shareNote.setEditor(editor);
-        shareNote.setShareType(shareType);
+        
         shareNote.setNote(note);
+        
         try {
             shareNoteDAO.get(key);
             shareNoteDAO.update(shareNote);
             return this.open(note.getId(), editor);
         } catch (NotExistDataException ex1) {
         } catch (DAOException ex2) {
+            ex2.printStackTrace();
             throw new ServerServiceException(ex2.getMessage());
         }
         
         List<NoteBlock> authorBlocks = note.getBlocks();
         try {
+            shareNote.setShareType(ShareNote.ShareType.CAN_EDIT);
+            shareNote.setEditor(note.getAuthor());
+            shareNoteDAO.create(shareNote);
+            shareNote.setEditor(editor);
+            shareNote.setShareType(shareType);
             for(NoteBlock noteBlock: authorBlocks) {
                 NoteBlock thisEditorBlock = noteBlock;
                 thisEditorBlock.setEditor(shareNote.getEditor());
@@ -64,8 +70,11 @@ public class ShareNoteService extends NoteService {
                 }
             }
             shareNoteDAO.create(shareNote);
+            note.setPubliced(true);
+            super.save(note);
             return this.open(shareNote.getId(), shareNote.getEditor());
         } catch (DAOException ex) {
+            ex.printStackTrace();
             throw new ServerServiceException(ex.getMessage());
         }
     }
@@ -111,4 +120,6 @@ public class ShareNoteService extends NoteService {
             throw new ServerServiceException(ex.getMessage());
         }
     }
+    
+    
 }

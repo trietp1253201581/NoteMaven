@@ -8,12 +8,10 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Một transfer cho dữ liệu của các note để chia sẻ giữa các user
- * @author Nhóm 23
- * @since 06/04/2024
+ * Một transfer cho dữ liệu của các note được chia sẻ
+ * @author Nhóm 17
  * @version 1.0
  */
-
 public class ShareNote extends Note {
     private String editor;
     private ShareType shareType;
@@ -26,9 +24,6 @@ public class ShareNote extends Note {
         READ_ONLY, CAN_EDIT;
     }
     
-    /**
-     * Constructor và cài đặt dữ liệu default cho ShareNote
-     */
     public ShareNote() {
         super();
         this.editor = "";
@@ -97,6 +92,15 @@ public class ShareNote extends Note {
         return hash;
     }
 
+    /**
+     * So sánh một {@link Object} với {@link ShareNote} này.
+     * @param obj Object cần so sánh
+     * @return {@code true} nếu obj là một thể hiện của ShareNote,
+     * thể hiện Note tương ứng của obj và ShareNote này bằng nhau và
+     * thuộc tính {@code editor} của obj bằng với
+     * {@code editor} của Note, {@code false} nếu ngược lại.
+     * @see hashCode()
+     */
     @Override
     public boolean equals(Object obj) {
         if(this == obj) {
@@ -117,8 +121,8 @@ public class ShareNote extends Note {
     }
     
     /**
-     * Set giá trị note cho các thuộc tính tương ứng của sharenote
-     * @param note note cần set up
+     * Chuyển dữ liệu từ một {@link Note} vào một {@link ShareNote}
+     * @param note Note cần chuyển dữ liệu
      */
     public void setNote(Note note) {
         super.setId(note.getId());
@@ -127,10 +131,15 @@ public class ShareNote extends Note {
         super.setBlocks(note.getBlocks());
         super.setLastModifiedDate(note.getLastModifiedDate());
         super.setFilters(note.getFilters());
+        super.setPubliced(note.isPubliced());
     }
 
     @Override
     public String toString() {
-        return "ShareNote{" + "editor=" + editor + ", shareType=" + shareType + ", otherEditorBlocks=" + otherEditorBlocks + '}';
+        return "ShareNote{" + 
+                "editor=" + editor + 
+                ", shareType=" + shareType + 
+                ", otherEditorBlocks=" + otherEditorBlocks + 
+                '}';
     }
 }

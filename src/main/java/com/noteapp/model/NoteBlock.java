@@ -3,8 +3,9 @@ package com.noteapp.model;
 import java.util.Objects;
 
 /**
- *
- * @author admin
+ * Một transfer cho dữ liệu của các note block
+ * @author Nhóm 17
+ * @version 1.0
  */
 public class NoteBlock extends DTO {
     private int id;
@@ -13,6 +14,9 @@ public class NoteBlock extends DTO {
     private BlockType blockType;
     private int order;
     
+    /**
+     * Các kiểu của Block
+     */
     public static enum BlockType {
         TEXT, SURVEY
     }
@@ -23,6 +27,14 @@ public class NoteBlock extends DTO {
         this.header = "";
         this.editor = "";
         this.blockType = BlockType.TEXT;
+    }
+
+    public NoteBlock(String header, String editor, BlockType blockType) {
+        this.id = -1;
+        this.order = -1;
+        this.header = header;
+        this.editor = editor;
+        this.blockType = blockType;
     }
 
     public NoteBlock(int id, String header, String editor, BlockType blockType, int order) {
@@ -74,9 +86,10 @@ public class NoteBlock extends DTO {
     }
     
     /**
-     * Kiểm tra xem một thể hiện Note có mang giá trị default không
-     * @return (1) {@code true} nếu đây là default Note, (2) {@code false} nếu ngược lại
+     * Kiểm tra một {@link NoteBlock} có mang giá trị mặc định không
+     * @return {@code true} nếu id bằng -1, ngược lại là {@code false}
      */
+    @Override
     public boolean isDefaultValue() {
         return id == -1;
     }
@@ -93,8 +106,8 @@ public class NoteBlock extends DTO {
      * So sánh một {@link Object} với {@link NoteBlock} này.
      * @param obj Object cần so sánh
      * @return {@code true} nếu obj là một thể hiện của NoteBlock
-     * và thuộc tính {@code noteId}, {@code editor} của obj bằng với
-     * {@code noteId}, {@code editor} của NoteBlock
+     * và thuộc tính {@code id}, {@code editor} của obj bằng với
+     * {@code noteId}, {@code editor} của NoteBlock; ngược lại trả về {@code false}.
      * @see hashCode()
      */
     @Override

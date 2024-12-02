@@ -35,6 +35,7 @@
       <HBox prefWidth="200.0">
          <children>
             <Button fx:id="addItemButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="99.0" text="Add" />
+            <Button fx:id="deleteButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="99.0" text="Delete" />
          </children>
       </HBox>
    </children>

@@ -1,10 +1,9 @@
 package com.noteapp.model;
 
-import java.util.Objects;
-
 /**
- *
- * @author admin
+ * Một transfer cho dữ liệu của các note block dạng text
+ * @author Nhóm 17
+ * @version 1.0
  */
 public class TextBlock extends NoteBlock {
     private String content;
@@ -15,6 +14,11 @@ public class TextBlock extends NoteBlock {
 
     public TextBlock(String content) {
         super();
+        this.content = content;
+    }
+
+    public TextBlock(String content, String header, String editor, BlockType blockType) {
+        super(header, editor, blockType);
         this.content = content;
     }
 
@@ -31,41 +35,26 @@ public class TextBlock extends NoteBlock {
         this.content = content;
     }
     
+    /**
+     * Chuyển dữ liệu từ một {@link NoteBlock} vào một {@link TextBlock}
+     * @param noteBlock NoteBlock cần chuyển dữ liệu
+     */
     public void setNoteBlock(NoteBlock noteBlock) {
         super.setId(noteBlock.getId());
         super.setHeader(noteBlock.getHeader());
         super.setBlockType(noteBlock.getBlockType());
         super.setOrder(noteBlock.getOrder());
     }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 37 * hash + Objects.hashCode(this.content);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final TextBlock other = (TextBlock) obj;
-        final NoteBlock otherNoteBlock = (NoteBlock) other;
-        if(!super.equals(otherNoteBlock)) {
-            return false;
-        }
-        return Objects.equals(this.content, other.content);
-    }
-
+    
     @Override
     public String toString() {
-        return "TextBlock{" + "content=" + content + '}';
+        return "TextBlock{" + 
+                "id=" + super.getId() + 
+                ", header=" + super.getHeader() + 
+                ", editor=" + super.getEditor() + 
+                ", blockType=" + super.getBlockType() + 
+                ", order=" + super.getOrder() +
+                ", content=" + content +
+                '}';
     }
 }

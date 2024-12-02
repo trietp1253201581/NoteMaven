@@ -58,7 +58,7 @@ public class NoteFilterDAO extends DAO<NoteFilter>{
             while (resultSet.next()) {
                 NoteFilter noteFilter = new NoteFilter();
                 //Set dữ liệu cho noteFilter
-                noteFilter.setFilterContent(resultSet.getString(ColumnName.filter.toString()));
+                noteFilter.setFilter(resultSet.getString(ColumnName.filter.toString()));
                 noteFilters.add(noteFilter);
             }    
             //Nếu noteFilters rỗng thì ném ngoại lệ là danh sách trống
@@ -91,7 +91,7 @@ public class NoteFilterDAO extends DAO<NoteFilter>{
             while (resultSet.next()) {
                 NoteFilter noteFilter = new NoteFilter();
                 //Set dữ liệu cho noteFilter
-                noteFilter.setFilterContent(resultSet.getString(ColumnName.filter.toString()));
+                noteFilter.setFilter(resultSet.getString(ColumnName.filter.toString()));
                 noteFilters.add(noteFilter);
             }    
             //Nếu noteFilters rỗng thì ném ngoại lệ là danh sách trống
@@ -128,7 +128,7 @@ public class NoteFilterDAO extends DAO<NoteFilter>{
             //Chuyển từng hàng dữ liệu sang noteFilter và thêm vào list
             while (resultSet.next()) {
                 //Set dữ liệu cho noteFilter
-                noteFilter.setFilterContent(resultSet.getString(ColumnName.filter.toString()));
+                noteFilter.setFilter(resultSet.getString(ColumnName.filter.toString()));
             }    
             //Nếu không tồn tại thì ném ngoại lệ
             if(noteFilter.isDefaultValue()) {
@@ -162,7 +162,7 @@ public class NoteFilterDAO extends DAO<NoteFilter>{
             PreparedStatement preparedStatement = connection.prepareStatement(query);
             //Set các tham số cho truy vấn
             preparedStatement.setInt(1, noteId);
-            preparedStatement.setString(2, newNoteFilter.getFilterContent());
+            preparedStatement.setString(2, newNoteFilter.getFilter());
             
             if(preparedStatement.executeUpdate() <= 0) {
                 throw new FailedExecuteException();
