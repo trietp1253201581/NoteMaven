@@ -1,13 +1,14 @@
 package com.noteapp.controller;
 
-import com.noteapp.model.Email;
-import com.noteapp.model.Note;
-import com.noteapp.model.NoteBlock;
-import com.noteapp.model.NoteFilter;
-import com.noteapp.model.ShareNote;
-import com.noteapp.model.TextBlock;
-import com.noteapp.model.User;
-import com.noteapp.service.server.ServerServiceException;
+import com.noteapp.user.model.Email;
+import com.noteapp.note.model.Note;
+import com.noteapp.note.model.NoteBlock;
+import com.noteapp.note.model.NoteFilter;
+import com.noteapp.note.model.ShareNote;
+import com.noteapp.note.model.TextBlock;
+import com.noteapp.user.model.User;
+import com.noteapp.note.service.NoteServiceException;
+import com.noteapp.user.service.UserServiceException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Date;
@@ -30,7 +31,9 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 
@@ -147,6 +150,13 @@ public class DashboardController extends Controller {
     @FXML
     private VBox shareNoteCardLayout;
     
+    @FXML
+    private FlowPane recentlyVisitedLayout;
+    @FXML
+    private AnchorPane homeScene;
+    @FXML
+    private StackPane stackLayout;
+    
     private User myUser;   
     private Note currentNote;
     private List<Note> myNotes;   
@@ -165,7 +175,7 @@ public class DashboardController extends Controller {
             changeSceneInExtraScene(myNotesButton);
             try {
                 myNotes = noteService.getAll(myUser.getUsername());
-            } catch (ServerServiceException ex) {
+            } catch (NoteServiceException ex) {
                 myNotes = new ArrayList<>();
             }
             initMyNotesScene(myNotes);
@@ -178,10 +188,10 @@ public class DashboardController extends Controller {
             changeSceneInExtraScene(importExportButton);
             try {
                 myNotes = noteService.getAll(myUser.getUsername());
-            } catch (ServerServiceException ex) {
+            } catch (NoteServiceException ex) {
                 myNotes = new ArrayList<>();
             }
-            initImportExportScene(myNotes);
+            initHomeScene(myNotes);
         });
         shareNoteButton.setOnAction((ActionEvent event) -> {
             //Chuyển sang Scene ShareNote
@@ -190,13 +200,13 @@ public class DashboardController extends Controller {
             try { 
                 //Lấy thành công
                 myNotes = noteService.getAll(myUser.getUsername());
-            } catch (ServerServiceException ex) {
+            } catch (NoteServiceException ex) {
                 showAlert(Alert.AlertType.ERROR, ex.getMessage());
             }
             //Lấy tất cả các note được share tới myUser này
             try { 
                 mySharedNotes = shareNoteService.getAllReceived(myUser.getUsername());
-            } catch (ServerServiceException ex) {
+            } catch (NoteServiceException ex) {
                 showAlert(Alert.AlertType.ERROR, ex.getMessage());
             }
             //Init lại Scene
@@ -247,10 +257,11 @@ public class DashboardController extends Controller {
         currentNote = new Note();
         try {           
             myNotes = noteService.getAll(myUser.getUsername());
-        } catch (ServerServiceException ex) {
+        } catch (NoteServiceException ex) {
             myNotes = new ArrayList<>();
         }
         initMyNotesScene(myNotes);
+        
         changeSceneInExtraScene(myNotesButton);
     }
     
@@ -291,7 +302,7 @@ public class DashboardController extends Controller {
                             }
                             //Load lại Edit Scene và mở Edit Scene
                             
-                        } catch (ServerServiceException ex) {
+                        } catch (NoteServiceException ex) {
                             showAlert(Alert.AlertType.ERROR, ex.getMessage());
                         }
                     }
@@ -302,6 +313,40 @@ public class DashboardController extends Controller {
                 System.err.println(ex);
             }
         }      
+    }
+    
+    protected void initHomeScene(List<Note> recentlyNotes) {
+        recentlyVisitedLayout.getChildren().clear();
+        if (recentlyNotes.isEmpty()) {
+            return;
+        }
+        String filePath = Controller.DEFAULT_FXML_RESOURCE + "RecentlyNoteCardView.fxml";
+        for (Note note: recentlyNotes) {
+            try {
+                RecentlyNoteCardController controller = new RecentlyNoteCardController();
+                VBox box = controller.loadFXML(filePath, controller);
+                controller.setData(note);
+                box.setOnMouseClicked((event) -> {
+                    Optional<ButtonType> optional = showAlert(Alert.AlertType.CONFIRMATION, 
+                            "Open " + controller.getNote().getHeader());
+                    if (optional.get() == ButtonType.OK) {
+                        int noteId = controller.getNote().getId();
+                        try {
+                            Note selectedNote = noteService.open(noteId);
+                            if (note.isPubliced()) {
+                                ShareNote selectedShareNote = shareNoteService.open(noteId, myUser.getUsername());
+                                openEditView(myUser, selectedShareNote);
+                            } else {
+                                openEditView(myUser, selectedNote);
+                            }
+                        } catch (NoteServiceException ex) {
+                        }
+                    }
+                });
+                recentlyVisitedLayout.getChildren().add(box);
+            } catch (IOException ex) {
+            }
+        }
     }
     
     protected void initMyAccountScene(User user) {
@@ -389,7 +434,7 @@ public class DashboardController extends Controller {
                             
                             //Load lại Edit Scene và mở Edit Scene
                             openEditView(myUser, (ShareNote) currentNote);
-                        } catch (ServerServiceException ex) {
+                        } catch (NoteServiceException ex) {
                             showAlert(Alert.AlertType.ERROR, ex.getMessage());
                         }
                     }
@@ -456,7 +501,7 @@ public class DashboardController extends Controller {
                 //Thêm vào list và load lại
                 myNotes.add(newNote);
                 initMyNotesScene(myNotes);
-            } catch (ServerServiceException ex) {
+            } catch (NoteServiceException ex) {
                 showAlert(Alert.AlertType.ERROR, ex.getMessage());
             }
         });
@@ -491,7 +536,7 @@ public class DashboardController extends Controller {
                 myNotes.remove(deletedNote);
                 //Load lại My Notes Scene
                 initMyNotesScene(myNotes);
-            } catch (ServerServiceException ex) {
+            } catch (NoteServiceException ex) {
                 showAlert(Alert.AlertType.ERROR, ex.getMessage());
             }
         });
@@ -568,7 +613,7 @@ public class DashboardController extends Controller {
             //Cập nhật thành công
             userService.update(myUser);
             showAlert(Alert.AlertType.INFORMATION, "Successfully update for " + myUser.getUsername());
-        } catch (ServerServiceException ex) {
+        } catch (UserServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }
@@ -636,7 +681,7 @@ public class DashboardController extends Controller {
             shareNoteService.share(selectedNote, receiverUsename, shareType);
             //Thông báo
             showAlert(Alert.AlertType.INFORMATION, "Successfully share");
-        } catch (ServerServiceException ex) {
+        } catch (NoteServiceException ex) {
             ex.printStackTrace();
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
@@ -651,7 +696,7 @@ public class DashboardController extends Controller {
         myAccountButton.setStyle(unPressedStyle);
         myAccountScene.setVisible(false);
         importExportButton.setStyle(unPressedStyle);
-        importExportScene.setVisible(false);
+        homeScene.setVisible(false);
         shareNoteButton.setStyle(unPressedStyle);
         shareNoteScene.setVisible(false);
         //Press button được chọn và chuyển scene tương ứng
@@ -663,7 +708,7 @@ public class DashboardController extends Controller {
             myAccountScene.setVisible(true);
         } else if (button == importExportButton) {
             importExportButton.setStyle(pressedStyle);
-            importExportScene.setVisible(true);
+            homeScene.setVisible(true);
         } else if (button == shareNoteButton) {
             shareNoteButton.setStyle(pressedStyle);
             shareNoteScene.setVisible(true);

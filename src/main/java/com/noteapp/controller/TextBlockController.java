@@ -1,6 +1,6 @@
 package com.noteapp.controller;
 
-import com.noteapp.model.TextBlock;
+import com.noteapp.note.model.TextBlock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

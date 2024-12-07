@@ -4,7 +4,7 @@
  */
 package com.noteapp.controller;
 
-import com.noteapp.model.SurveyBlock;
+import com.noteapp.note.model.SurveyBlock;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,11 +1,11 @@
 package com.noteapp.controller;
 
 import static com.noteapp.controller.Controller.showAlert;
-import com.noteapp.model.NoteBlock;
-import com.noteapp.model.ShareNote;
-import com.noteapp.model.SurveyBlock;
-import com.noteapp.model.TextBlock;
-import com.noteapp.service.server.ServerServiceException;
+import com.noteapp.note.model.NoteBlock;
+import com.noteapp.note.model.ShareNote;
+import com.noteapp.note.model.SurveyBlock;
+import com.noteapp.note.model.TextBlock;
+import com.noteapp.note.service.NoteServiceException;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -90,7 +90,7 @@ public class EditShareNoteController extends EditNoteController {
                         getBlocksByHeader(otherEditorBlocks);
                         updateTextBlock();
                         updateSurveyBlock();
-                    } catch (ServerServiceException ex) {
+                    } catch (NoteServiceException ex) {
                         showAlert(Alert.AlertType.WARNING, "Can't update!");
                     }
                 });
@@ -160,7 +160,7 @@ public class EditShareNoteController extends EditNoteController {
         try {
             noteService.save(myShareNote);
             showAlert(Alert.AlertType.INFORMATION, "Successfully save for " + myShareNote.getHeader());
-        } catch (ServerServiceException ex) {
+        } catch (NoteServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }

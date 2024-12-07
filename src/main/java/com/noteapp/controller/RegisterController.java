@@ -1,11 +1,12 @@
 package com.noteapp.controller;
 
-import com.noteapp.model.Email;
-import com.noteapp.model.User;
-import com.noteapp.service.security.MailjetSevice;
-import com.noteapp.service.security.SixNumVerificationCodeService;
-import com.noteapp.service.security.VerificationMailService;
-import com.noteapp.service.server.ServerServiceException;
+import com.noteapp.user.model.Email;
+import com.noteapp.user.model.User;
+import com.noteapp.user.service.security.MailjetSevice;
+import com.noteapp.user.service.security.SixNumVerificationCodeService;
+import com.noteapp.user.service.security.VerificationMailService;
+import com.noteapp.note.service.NoteServiceException;
+import com.noteapp.user.service.UserServiceException;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -199,7 +200,7 @@ public class RegisterController extends Controller {
                     }          
                 }
             }
-        } catch (ServerServiceException ex) {
+        } catch (UserServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }

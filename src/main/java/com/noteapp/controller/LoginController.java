@@ -1,7 +1,8 @@
 package com.noteapp.controller;
 
-import com.noteapp.model.User;
-import com.noteapp.service.server.ServerServiceException;
+import com.noteapp.user.model.User;
+import com.noteapp.note.service.NoteServiceException;
+import com.noteapp.user.service.UserServiceException;
 import java.io.IOException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -62,7 +63,7 @@ public class LoginController extends Controller {
             showAlert(Alert.AlertType.INFORMATION, "Successfully Login");
             //Mở Dashboard của user này
             openDashboard(user);
-        } catch (ServerServiceException ex) {
+        } catch (UserServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }
@@ -108,7 +109,7 @@ public class LoginController extends Controller {
     
     protected void openDashboard(User myUser) {
         try {
-            String filePath = Controller.DEFAULT_FXML_RESOURCE + "DashboardView.fxml";
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "DashboardView_1.fxml";
             
             DashboardController controller = new DashboardController();
 

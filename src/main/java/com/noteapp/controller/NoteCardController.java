@@ -1,8 +1,8 @@
 package com.noteapp.controller;
 
-import com.noteapp.model.Note;
-import com.noteapp.model.NoteFilter;
-import com.noteapp.model.ShareNote;
+import com.noteapp.note.model.Note;
+import com.noteapp.note.model.NoteFilter;
+import com.noteapp.note.model.ShareNote;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 

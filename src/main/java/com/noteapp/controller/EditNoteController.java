@@ -1,11 +1,11 @@
 package com.noteapp.controller;
 
-import com.noteapp.model.Note;
-import com.noteapp.model.NoteBlock;
-import com.noteapp.model.NoteFilter;
-import com.noteapp.model.TextBlock;
-import com.noteapp.model.User;
-import com.noteapp.service.server.ServerServiceException;
+import com.noteapp.note.model.Note;
+import com.noteapp.note.model.NoteBlock;
+import com.noteapp.note.model.NoteFilter;
+import com.noteapp.note.model.TextBlock;
+import com.noteapp.user.model.User;
+import com.noteapp.note.service.NoteServiceException;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -149,7 +149,7 @@ public class EditNoteController extends Controller {
                 }
                 //Thiết lập note name vừa nhập cho Label   
                 noteHeaderLabel.setText(newNoteHeader);
-            } catch (ServerServiceException ex) {
+            } catch (NoteServiceException ex) {
                 showAlert(Alert.AlertType.ERROR, ex.getMessage());
             }
         });
@@ -167,7 +167,7 @@ public class EditNoteController extends Controller {
         try {
             noteService.save(myNote);
             showAlert(Alert.AlertType.INFORMATION, "Successfully save for " + myNote.getHeader());
-        } catch (ServerServiceException ex) {
+        } catch (NoteServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }

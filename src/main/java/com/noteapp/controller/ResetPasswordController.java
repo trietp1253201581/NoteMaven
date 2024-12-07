@@ -1,10 +1,11 @@
 package com.noteapp.controller;
 
-import com.noteapp.model.Email;
-import com.noteapp.service.security.MailjetSevice;
-import com.noteapp.service.security.SixNumVerificationCodeService;
-import com.noteapp.service.security.VerificationMailService;
-import com.noteapp.service.server.ServerServiceException;
+import com.noteapp.user.model.Email;
+import com.noteapp.user.service.security.MailjetSevice;
+import com.noteapp.user.service.security.SixNumVerificationCodeService;
+import com.noteapp.user.service.security.VerificationMailService;
+import com.noteapp.note.service.NoteServiceException;
+import com.noteapp.user.service.UserServiceException;
 import java.io.IOException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -65,14 +66,14 @@ public class ResetPasswordController extends Controller {
             errorUsernameFieldLabel.setVisible(false);
         }
         try {
-            Email vefiryEmail = userService.checkEmail(username);
+            Email vefiryEmail = userService.getVerificationEmail(username);
             verificationMailService = new VerificationMailService(
                     new MailjetSevice(),
                     new SixNumVerificationCodeService()
             );
             verificationMailService.sendCode(vefiryEmail);
             verificationCodeField.setEditable(true);
-        } catch (ServerServiceException ex) {
+        } catch (UserServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }
@@ -111,7 +112,7 @@ public class ResetPasswordController extends Controller {
             initScene();
             showAlert(Alert.AlertType.INFORMATION, "Successfully reset.");
             openLogin();
-        } catch (ServerServiceException ex) {
+        } catch (UserServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }

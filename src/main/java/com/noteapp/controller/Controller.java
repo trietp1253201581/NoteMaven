@@ -1,9 +1,9 @@
 package com.noteapp.controller;
 
-import com.noteapp.service.security.VerificationMailService;
-import com.noteapp.service.server.NoteService;
-import com.noteapp.service.server.ShareNoteService;
-import com.noteapp.service.server.UserService;
+import com.noteapp.user.service.security.VerificationMailService;
+import com.noteapp.note.service.NoteService;
+import com.noteapp.note.service.ShareNoteService;
+import com.noteapp.user.service.UserService;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
