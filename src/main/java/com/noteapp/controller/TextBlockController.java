@@ -39,6 +39,10 @@ public class TextBlockController extends Controller {
     private Button switchToOtherButton;
     @FXML
     private Label changeNotify;
+    @FXML
+    private Button upButton;
+    @FXML
+    private Button downButton;
     
     private int noteId;
     private TextBlock textBlock;
@@ -128,6 +132,14 @@ public class TextBlockController extends Controller {
 
     public Button getSetToDefaultButton() {
         return setToDefaultButton;
+    }
+
+    public Button getUpButton() {
+        return upButton;
+    }
+
+    public Button getDownButton() {
+        return downButton;
     }
 
     public ComboBox<String> getOtherEditComboBox() {

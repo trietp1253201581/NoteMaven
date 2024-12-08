@@ -1,7 +1,6 @@
 package com.noteapp.controller;
 
 import com.noteapp.user.model.User;
-import com.noteapp.note.service.NoteServiceException;
 import com.noteapp.user.service.UserServiceException;
 import java.io.IOException;
 import javafx.event.ActionEvent;
@@ -109,7 +108,7 @@ public class LoginController extends Controller {
     
     protected void openDashboard(User myUser) {
         try {
-            String filePath = Controller.DEFAULT_FXML_RESOURCE + "DashboardView_1.fxml";
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "DashboardView.fxml";
             
             DashboardController controller = new DashboardController();
 

@@ -64,7 +64,7 @@ public class DashboardController extends Controller {
     @FXML
     private Button myAccountButton;
     @FXML
-    private Button importExportButton;
+    private Button homeButton;
     @FXML
     private Button shareNoteButton;
     //Các thuộc tính của myNotesScene
@@ -184,8 +184,8 @@ public class DashboardController extends Controller {
             changeSceneInExtraScene(myAccountButton);
             initMyAccountScene(myUser);
         });
-        importExportButton.setOnAction((ActionEvent event) -> {
-            changeSceneInExtraScene(importExportButton);
+        homeButton.setOnAction((ActionEvent event) -> {
+            changeSceneInExtraScene(homeButton);
             try {
                 myNotes = noteService.getAll(myUser.getUsername());
             } catch (NoteServiceException ex) {
@@ -695,7 +695,7 @@ public class DashboardController extends Controller {
         myNotesScene.setVisible(false);
         myAccountButton.setStyle(unPressedStyle);
         myAccountScene.setVisible(false);
-        importExportButton.setStyle(unPressedStyle);
+        homeButton.setStyle(unPressedStyle);
         homeScene.setVisible(false);
         shareNoteButton.setStyle(unPressedStyle);
         shareNoteScene.setVisible(false);
@@ -706,8 +706,8 @@ public class DashboardController extends Controller {
         } else if (button == myAccountButton) {          
             myAccountButton.setStyle(pressedStyle);
             myAccountScene.setVisible(true);
-        } else if (button == importExportButton) {
-            importExportButton.setStyle(pressedStyle);
+        } else if (button == homeButton) {
+            homeButton.setStyle(pressedStyle);
             homeScene.setVisible(true);
         } else if (button == shareNoteButton) {
             shareNoteButton.setStyle(pressedStyle);

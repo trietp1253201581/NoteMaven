@@ -51,6 +51,18 @@
             </Button>
             <VBox layoutX="11.0" layoutY="93.0" prefHeight="200.0" prefWidth="227.0">
                <children>
+                  <Button fx:id="homeButton" mnemonicParsing="false" prefHeight="36.0" prefWidth="228.0" styleClass="extra-left-form-button" stylesheets="@dashboardStyle.css" text="Home">
+                     <font>
+                        <Font name="System Bold" size="12.0" />
+                     </font>
+                     <graphic>
+                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../image/file-export.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
                   <Button fx:id="myNotesButton" mnemonicParsing="false" prefHeight="36.0" prefWidth="228.0" styleClass="extra-left-form-button" stylesheets="@dashboardStyle.css" text="Your Notes">
                      <font>
                         <Font name="System Bold" size="12.0" />
@@ -71,18 +83,6 @@
                         <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
                            <image>
                               <Image url="@../image/user.png" />
-                           </image>
-                        </ImageView>
-                     </graphic>
-                  </Button>
-                  <Button fx:id="importExportButton" mnemonicParsing="false" prefHeight="36.0" prefWidth="228.0" styleClass="extra-left-form-button" stylesheets="@dashboardStyle.css" text="Home">
-                     <font>
-                        <Font name="System Bold" size="12.0" />
-                     </font>
-                     <graphic>
-                        <ImageView fitHeight="20.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
-                           <image>
-                              <Image url="@../image/file-export.png" />
                            </image>
                         </ImageView>
                      </graphic>
@@ -408,6 +408,11 @@
                         </VBox>
                      </children>
                   </FlowPane>
+                  <ImageView fitHeight="40.0" fitWidth="40.0" layoutX="70.0" layoutY="155.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../image/repeat.png" />
+                     </image>
+                  </ImageView>
                </children>
             </AnchorPane>
          </children>

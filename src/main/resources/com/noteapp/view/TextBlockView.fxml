@@ -43,6 +43,8 @@
             <Button fx:id="returnToYoursButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="99.0" text="Return to yours" />
             <Button fx:id="switchToOtherButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="99.0" text="Switch to other" />
             <ComboBox fx:id="otherEditComboBox" prefWidth="150.0" promptText="Other Edit By" />
+            <Button fx:id="upButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="Up" />
+            <Button fx:id="downButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="Down" />
          </children>
       </HBox>
    </children>

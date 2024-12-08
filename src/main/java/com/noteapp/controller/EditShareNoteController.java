@@ -17,6 +17,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.layout.VBox;
 
@@ -134,6 +135,27 @@ public class EditShareNoteController extends EditNoteController {
                 }
                 controller.setTextForView(otherTextBlock.getContent());
             });
+            controller.getUpButton().setOnAction((ActionEvent event) -> {
+                int order = controller.getTextBlock().getOrder();
+                if (order <= 1) return;
+                swapOrder(order - 1, order);
+                
+                //Swap
+                Node temp = blocksLayout.getChildren().get(order - 1);
+                blocksLayout.getChildren().remove(order - 1);
+                blocksLayout.getChildren().add(order - 2, temp);
+            });
+            
+            controller.getDownButton().setOnAction((ActionEvent event) -> {
+                int order = controller.getTextBlock().getOrder();
+                if (order >= blocksLayout.getChildren().size()) return;
+                swapOrder(order, order + 1);
+                
+                //Swap
+                Node temp = blocksLayout.getChildren().get(order);
+                blocksLayout.getChildren().remove(order);
+                blocksLayout.getChildren().add(order - 1, temp);
+            });
              
             blocksLayout.getChildren().add(box);
             textBlockControllers.add(controller);
@@ -236,6 +258,38 @@ public class EditShareNoteController extends EditNoteController {
             surveyBlockControllers.add(controller);
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
+        }
+    }
+    
+    protected NoteBlock getBlock(int order) {
+        for (TextBlockController textBlockController: textBlockControllers) {
+            if (textBlockController.getTextBlock().getOrder() == order) {
+                return textBlockController.getTextBlock();
+            }
+        }
+        for (SurveyBlockController surveyBlockController: surveyBlockControllers) {
+            if (surveyBlockController.getSurveyBlock().getOrder() == order) {
+                return surveyBlockController.getSurveyBlock();
+            }
+        }
+        return new NoteBlock();
+    }
+    
+    protected void swapOrder(int firstOrder, int secondOrder) {
+        for (TextBlockController controller: textBlockControllers) {
+            if (controller.getTextBlock().getOrder() == firstOrder) {
+                controller.getTextBlock().setOrder(secondOrder);
+            } else if (controller.getTextBlock().getOrder() == secondOrder) {
+                controller.getTextBlock().setOrder(firstOrder);
+            }
+        }
+        
+        for (SurveyBlockController controller: surveyBlockControllers) {
+            if (controller.getSurveyBlock().getOrder() == firstOrder) {
+                controller.getSurveyBlock().setOrder(secondOrder);
+            } else if (controller.getSurveyBlock().getOrder() == secondOrder) {
+                controller.getSurveyBlock().setOrder(firstOrder);
+            }
         }
     }
 }
