@@ -36,6 +36,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
 /**
  * FXML Controller class cho Dashboard GUI
@@ -87,8 +88,6 @@ public class DashboardController extends Controller {
     private PasswordField passwordField;
     @FXML
     private TextField emailAddressField;
-    @FXML
-    private TextField emailNameField;
     @FXML
     private TextField nameField;
     @FXML 
@@ -161,7 +160,7 @@ public class DashboardController extends Controller {
     private Note currentNote;
     private List<Note> myNotes;   
     private List<ShareNote> mySharedNotes;
-    private boolean savedNoteStatus;
+    private List<Note> openedNotes;
     
     @Override
     public void init() {
@@ -178,7 +177,13 @@ public class DashboardController extends Controller {
             } catch (NoteServiceException ex) {
                 myNotes = new ArrayList<>();
             }
-            initMyNotesScene(myNotes);
+            //Lấy tất cả các note được share tới myUser này
+            try { 
+                mySharedNotes = shareNoteService.getAllReceived(myUser.getUsername());
+            } catch (NoteServiceException ex) {
+                showAlert(Alert.AlertType.ERROR, ex.getMessage());
+            }
+            initMyNotesScene(myNotes, mySharedNotes);
         });
         myAccountButton.setOnAction((ActionEvent event) -> {
             changeSceneInExtraScene(myAccountButton);
@@ -245,30 +250,37 @@ public class DashboardController extends Controller {
         });
         //Other
         backMainSceneButton.setOnAction((ActionEvent event) -> {
-            openEditView(myUser, currentNote);
+            if (currentNote.isDefaultValue()) {
+                showAlert(Alert.AlertType.ERROR, "No note has chosen!");
+                return;
+            }
+            if (!currentNote.isPubliced()) {
+                EditNoteController.open(myUser, currentNote, openedNotes, stage);
+            } else {
+                EditShareNoteController.open(myUser, (ShareNote) currentNote, openedNotes, stage);
+            }
         });
         logoutButton.setOnAction((ActionEvent event) -> {
-            openLogin();
+            LoginController.open(stage);
         });
     }
     
     public void initView() {
         userLabel.setText(myUser.getName());
-        currentNote = new Note();
         try {           
             myNotes = noteService.getAll(myUser.getUsername());
         } catch (NoteServiceException ex) {
             myNotes = new ArrayList<>();
         }
-        initMyNotesScene(myNotes);
+        initHomeScene(myNotes);
         
-        changeSceneInExtraScene(myNotesButton);
+        changeSceneInExtraScene(homeButton);
     }
     
-    protected void initMyNotesScene(List<Note> notes) {        
+    protected void initMyNotesScene(List<Note> notes, List<ShareNote> shareNotes) {        
         //Làm sạch layout
         noteCardLayout.getChildren().clear();
-        if(notes.isEmpty()) {
+        if(notes.isEmpty() || shareNotes.isEmpty()) {
             return;
         }
         //Load các Note Card
@@ -292,13 +304,15 @@ public class DashboardController extends Controller {
                             //Lấy thành công
                             int noteId = controller.getId();
                             currentNote = noteService.open(noteId);
+                            if (!openedNotes.contains(currentNote)) {
+                                openedNotes.add(currentNote);
+                            }
                             if (currentNote.isPubliced()) {
                                 currentNote = shareNoteService.open(noteId, myUser.getUsername());
-                                System.out.println(((ShareNote) currentNote).isPubliced());
-                                openEditView(myUser, (ShareNote) currentNote);
+                                EditShareNoteController.open(myUser, (ShareNote) currentNote, openedNotes, stage);
                             } else {
                                 
-                                openEditView(myUser, currentNote);
+                                EditNoteController.open(myUser, currentNote, openedNotes, stage);
                             }
                             //Load lại Edit Scene và mở Edit Scene
                             
@@ -313,6 +327,43 @@ public class DashboardController extends Controller {
                 System.err.println(ex);
             }
         }      
+        for(int i=0; i < shareNotes.size(); i++) {
+            //Load Note Card Layout
+            if (shareNotes.get(i).getAuthor().equals(myUser.getUsername())) {
+                continue;
+            }
+            try {
+                //Thiết lập dữ liệu cho Note Card
+                NoteCardController controller = new NoteCardController();
+                
+                HBox box = controller.loadFXML(filePath, controller);
+                controller.setData(shareNotes.get(i));
+                //Xử lý khi nhấn vào note card
+                box.setOnMouseClicked((MouseEvent event) -> {
+                    //Tạo thông báo và mở note nếu chọn OK
+                    Optional<ButtonType> optional = showAlert(Alert.AlertType.CONFIRMATION, 
+                            "Open " + controller.getHeader());
+                    if(optional.get() == ButtonType.OK) {                        
+                        try {
+                            //Lấy thành công
+                            int noteId = controller.getId();
+                            currentNote = shareNoteService.open(noteId, controller.getEditor());
+                            if (!openedNotes.contains(currentNote)) {
+                                openedNotes.add(currentNote);
+                            }
+                            //Load lại Edit Scene và mở Edit Scene
+                            EditShareNoteController.open(myUser, (ShareNote) currentNote, openedNotes, stage);
+                        } catch (NoteServiceException ex) {
+                            showAlert(Alert.AlertType.ERROR, ex.getMessage());
+                        }
+                    }
+                });
+                //Thêm Note Card vào layout
+                noteCardLayout.getChildren().add(box);
+            } catch (IOException ex) {
+                System.err.println(ex);
+            }
+        }        
     }
     
     protected void initHomeScene(List<Note> recentlyNotes) {
@@ -333,11 +384,15 @@ public class DashboardController extends Controller {
                         int noteId = controller.getNote().getId();
                         try {
                             Note selectedNote = noteService.open(noteId);
+                            if (!openedNotes.contains(selectedNote)) {
+                                openedNotes.add(selectedNote);
+                            }
+                            System.out.println(openedNotes);
                             if (note.isPubliced()) {
                                 ShareNote selectedShareNote = shareNoteService.open(noteId, myUser.getUsername());
-                                openEditView(myUser, selectedShareNote);
+                                EditShareNoteController.open(myUser, selectedShareNote, openedNotes, stage);
                             } else {
-                                openEditView(myUser, selectedNote);
+                                EditNoteController.open(myUser, selectedNote, openedNotes, stage);
                             }
                         } catch (NoteServiceException ex) {
                         }
@@ -355,7 +410,6 @@ public class DashboardController extends Controller {
         usernameField.setEditable(false);
         passwordField.setText(user.getPassword());
         emailAddressField.setText(user.getEmail().getAddress());
-        emailNameField.setText(user.getEmail().getName());
         nameField.setText(user.getName());
         schoolField.setText(user.getSchool());
         dayOfBirthField.setText(String.valueOf(user.getBirthday().toLocalDate().getDayOfMonth()));
@@ -397,54 +451,7 @@ public class DashboardController extends Controller {
     }
 
     protected void initShareNoteScene(List<Note> notes, List<ShareNote> shareNotes) {
-        //Clear ComboBox và thêm vào các header note trong list
-        chooseShareNoteComboBox.getItems().clear();
-        if(notes.isEmpty()) {
-            return;
-        }
-        for(Note note: notes) {
-            chooseShareNoteComboBox.getItems().add(note.getHeader());
-        }
-        //Set Type mặc định là Read Only
-        shareTypeReadOnly.setSelected(true);
-        //Khởi tạo các share note card
-        shareNoteCardLayout.getChildren().clear();
-        if(shareNotes.isEmpty()) {
-            return;
-        }
-        String filePath = Controller.DEFAULT_FXML_RESOURCE + "NoteCardView.fxml";
-        for(int i=0; i < shareNotes.size(); i++) {
-            //Load Note Card Layout
-            try {
-                //Thiết lập dữ liệu cho Note Card
-                NoteCardController controller = new NoteCardController();
-                
-                HBox box = controller.loadFXML(filePath, controller);
-                controller.setData(shareNotes.get(i));
-                //Xử lý khi nhấn vào note card
-                box.setOnMouseClicked((MouseEvent event) -> {
-                    //Tạo thông báo và mở note nếu chọn OK
-                    Optional<ButtonType> optional = showAlert(Alert.AlertType.CONFIRMATION, 
-                            "Open " + controller.getHeader());
-                    if(optional.get() == ButtonType.OK) {                        
-                        try {
-                            //Lấy thành công
-                            int noteId = controller.getId();
-                            currentNote = shareNoteService.open(noteId, controller.getEditor());
-                            
-                            //Load lại Edit Scene và mở Edit Scene
-                            openEditView(myUser, (ShareNote) currentNote);
-                        } catch (NoteServiceException ex) {
-                            showAlert(Alert.AlertType.ERROR, ex.getMessage());
-                        }
-                    }
-                });
-                //Thêm Note Card vào layout
-                shareNoteCardLayout.getChildren().add(box);
-            } catch (IOException ex) {
-                System.err.println(ex);
-            }
-        }        
+        
     }
     
     public void setMyUser(User myUser) {
@@ -455,11 +462,16 @@ public class DashboardController extends Controller {
         this.currentNote = currentNote;
     }
     
+    public void setOpenedNotes(List<Note> openedNotes) {
+        this.openedNotes = openedNotes;
+    }
+    
     protected void searchNote() {
         //Lấy thông tin cần search
         String searchText = searchNoteField.getText();
         //Tạo list mới để chứa các note hợp lệ
         List<Note> notes = new ArrayList<>();
+        List<ShareNote> shareNotes = new ArrayList<>();
         //Thêm các note hợp lệ vào list
         for(Note newNote: myNotes) {
             if(newNote.getHeader().contains(searchText)) { 
@@ -472,8 +484,19 @@ public class DashboardController extends Controller {
                 }
             }
         }
+        for (ShareNote newShareNote: mySharedNotes) {
+            if (newShareNote.getHeader().contains(searchText)) {
+                shareNotes.add(newShareNote);
+            } else {
+                for (NoteFilter noteFilter: newShareNote.getFilters()) {
+                    if (noteFilter.getFilter().contains(searchText)) {
+                        shareNotes.add(newShareNote);
+                    }
+                }
+            }
+        }
         //Load lại My Notes Scene
-        initMyNotesScene(notes);
+        initMyNotesScene(notes, shareNotes);
     }
     
     protected void createNote() {
@@ -500,7 +523,7 @@ public class DashboardController extends Controller {
                 showAlert(Alert.AlertType.INFORMATION, "Successfully create " + newNote.getHeader());
                 //Thêm vào list và load lại
                 myNotes.add(newNote);
-                initMyNotesScene(myNotes);
+                initMyNotesScene(myNotes, mySharedNotes);
             } catch (NoteServiceException ex) {
                 showAlert(Alert.AlertType.ERROR, ex.getMessage());
             }
@@ -535,7 +558,7 @@ public class DashboardController extends Controller {
                 //Xóa khỏi list và load lại
                 myNotes.remove(deletedNote);
                 //Load lại My Notes Scene
-                initMyNotesScene(myNotes);
+                initMyNotesScene(myNotes, mySharedNotes);
             } catch (NoteServiceException ex) {
                 showAlert(Alert.AlertType.ERROR, ex.getMessage());
             }
@@ -555,7 +578,6 @@ public class DashboardController extends Controller {
         //Lấy Email
         Email email = new Email();
         email.setAddress(emailAddressField.getText());
-        email.setName(emailNameField.getText());
         if(!email.checkEmailAddress()) {
             errorEmailFieldLabel.setVisible(true);
         }
@@ -715,60 +737,46 @@ public class DashboardController extends Controller {
         }
     }
     
-    protected void openEditView(User user, ShareNote shareNote) {
+    public static void open(User myUser, Stage stage) {
         try {
-            String filePath = Controller.DEFAULT_FXML_RESOURCE + "EditNoteView.fxml";
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "DashboardView.fxml";
             
-            EditShareNoteController controller = new EditShareNoteController();
+            DashboardController controller = new DashboardController();
 
             controller.setStage(stage);
-            controller.setMyUser(user);
-            controller.setMyNote(shareNote);
-            controller.setMyShareNote(shareNote);
+            controller.setMyUser(myUser);
+            controller.setCurrentNote(new Note());
+            controller.setOpenedNotes(new ArrayList<>());
             controller.loadFXMLAndSetScene(filePath, controller);
             controller.init();
-            controller.setOnAutoUpdate();
             //Set scene cho stage và show
             
             controller.showFXML();
         } catch (IOException ex) {
-            showAlert(Alert.AlertType.ERROR, "Can't open view");
+            showAlert(Alert.AlertType.ERROR, "Can't open dashboard");
         }
     }
     
-    protected void openEditView(User user, Note note) {
+    public static void open(User myUser, Note currentNote, List<Note> openedNotes, Stage stage) {
         try {
-            String filePath = Controller.DEFAULT_FXML_RESOURCE + "EditNoteView.fxml";
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "DashboardView.fxml";
             
-            EditNoteController controller = new EditNoteController();
+            DashboardController controller = new DashboardController();
 
             controller.setStage(stage);
-            controller.setMyUser(user);
-            controller.setMyNote(note);
+            controller.setMyUser(myUser);
+            controller.setOpenedNotes(openedNotes);
+            controller.setCurrentNote(currentNote);
             controller.loadFXMLAndSetScene(filePath, controller);
+            
             controller.init();
+            
+            
             //Set scene cho stage và show
             
             controller.showFXML();
         } catch (IOException ex) {
-            showAlert(Alert.AlertType.ERROR, "Can't open login");
-        }
-    }
-    
-    protected void openLogin() {
-        try {
-            String filePath = Controller.DEFAULT_FXML_RESOURCE + "LoginView.fxml";
-            
-            LoginController controller = new LoginController();
-
-            controller.setStage(stage);
-            controller.loadFXMLAndSetScene(filePath, controller);
-            controller.init();
-            //Set scene cho stage và show
-            
-            controller.showFXML();
-        } catch (IOException ex) {
-            showAlert(Alert.AlertType.ERROR, "Can't open login");
+            showAlert(Alert.AlertType.ERROR, "Can't open dashboard");
         }
     }
 }

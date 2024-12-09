@@ -1,17 +1,22 @@
 package com.noteapp.common.dbconnection;
 
-import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashMap;
 
 /**
  * Connection tới hệ QT CSDL MySQL
- * @author admin
+ * @author Nhóm 17
  * @version 1.0
  */
 public class MySQLDatabaseConnection extends SQLDatabaseConnection {
 
+    /**
+     * Khởi tạo một kết nối tới hệ quản trị CSDL MySQL
+     * @param url đường dẫn kết nối tới máy chủ MySQL ({@code jdbc:mysql://host:port/dbname})
+     * @param username tên đăng nhập MySQL
+     * @param password mật khẩu của tài khoản MySQL
+     */
     public MySQLDatabaseConnection(String url, String username, String password) {
         super.url = url;
         super.username = username;
@@ -19,6 +24,14 @@ public class MySQLDatabaseConnection extends SQLDatabaseConnection {
         super.enableQueries = new HashMap<>();
     }
     
+    /**
+     * Khởi tạo một kết nối tới hệ quản trị CSDL MySQL
+     * @param host máy chủ MySQL
+     * @param port cổng dịch vụ
+     * @param database tên database cần kết nối
+     * @param username tên đăng nhập MySQL
+     * @param password mật khẩu của tài khoản MySQL
+     */
     public MySQLDatabaseConnection(String host, int port, String database, String username, String password) {
         url = "jdbc:mysql://" + host + ":" + port + "/" + database;
         super.username = username;

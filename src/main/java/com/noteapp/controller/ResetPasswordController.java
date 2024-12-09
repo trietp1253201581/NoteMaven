@@ -4,7 +4,6 @@ import com.noteapp.user.model.Email;
 import com.noteapp.user.service.security.MailjetSevice;
 import com.noteapp.user.service.security.SixNumVerificationCodeService;
 import com.noteapp.user.service.security.VerificationMailService;
-import com.noteapp.note.service.NoteServiceException;
 import com.noteapp.user.service.UserServiceException;
 import java.io.IOException;
 import javafx.event.ActionEvent;
@@ -14,6 +13,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 
 public class ResetPasswordController extends Controller {
     @FXML
@@ -111,17 +111,17 @@ public class ResetPasswordController extends Controller {
             userService.updatePassword(username, passwordField.getText());
             initScene();
             showAlert(Alert.AlertType.INFORMATION, "Successfully reset.");
-            openLogin();
+            LoginController.open(stage);
         } catch (UserServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }
     
-    protected void openLogin() {
+    public static void open(Stage stage) {
         try {
-            String filePath = Controller.DEFAULT_FXML_RESOURCE + "LoginView.fxml";
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "ResetPasswordView.fxml";
             
-            LoginController controller = new LoginController();
+            ResetPasswordController controller = new ResetPasswordController();
 
             controller.setStage(stage);
             controller.loadFXMLAndSetScene(filePath, controller);
@@ -130,7 +130,8 @@ public class ResetPasswordController extends Controller {
             
             controller.showFXML();
         } catch (IOException ex) {
-            showAlert(Alert.AlertType.ERROR, "Can't open login");
+            ex.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Can't open reset Password");
         }
     }
 }

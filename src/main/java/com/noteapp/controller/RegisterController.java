@@ -5,7 +5,6 @@ import com.noteapp.user.model.User;
 import com.noteapp.user.service.security.MailjetSevice;
 import com.noteapp.user.service.security.SixNumVerificationCodeService;
 import com.noteapp.user.service.security.VerificationMailService;
-import com.noteapp.note.service.NoteServiceException;
 import com.noteapp.user.service.UserServiceException;
 import java.io.IOException;
 import java.sql.Date;
@@ -13,8 +12,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -24,6 +21,7 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.Stage;
 
 /**
  * FXML Controller class cho Register GUI
@@ -86,7 +84,7 @@ public class RegisterController extends Controller {
             close();
         }); 
         backLoginLabel.setOnMouseClicked((MouseEvent event) -> {
-            openLogin();
+            LoginController.open(stage);
         });
     }
     
@@ -196,7 +194,7 @@ public class RegisterController extends Controller {
                     Optional<ButtonType> optional = showAlert(Alert.AlertType.CONFIRMATION, "Back to Login");
                     if(optional.get() == ButtonType.OK) {
                         //Quay về trang đăng nhập
-                        openLogin();
+                        LoginController.open(stage);
                     }          
                 }
             }
@@ -225,11 +223,11 @@ public class RegisterController extends Controller {
         return verificationMailService.getCodeStatus();
     }
     
-    protected void openLogin() {
+    public static void open(Stage stage) {
         try {
-            String filePath = Controller.DEFAULT_FXML_RESOURCE + "LoginView.fxml";
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "RegisterView.fxml";
             
-            LoginController controller = new LoginController();
+            RegisterController controller = new RegisterController();
 
             controller.setStage(stage);
             controller.loadFXMLAndSetScene(filePath, controller);
@@ -238,7 +236,7 @@ public class RegisterController extends Controller {
             
             controller.showFXML();
         } catch (IOException ex) {
-            showAlert(Alert.AlertType.ERROR, "Can't open login");
+            showAlert(Alert.AlertType.ERROR, "Can't open register");
         }
     }
 }

@@ -11,6 +11,9 @@ import static com.noteapp.note.model.NoteBlock.BlockType.TEXT;
 import com.noteapp.note.model.ShareNote;
 import com.noteapp.note.model.SurveyBlock;
 import com.noteapp.note.model.TextBlock;
+import com.noteapp.user.dao.IUserDAO;
+import com.noteapp.user.dao.UserDAO;
+import com.noteapp.user.model.User;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,15 +23,23 @@ import java.util.List;
  */
 public class ShareNoteService extends NoteService {
     protected IShareNoteDAO shareNoteDAO;
+    protected IUserDAO userDAO;
     
     @Override
     protected void getInstanceOfDAO() {
         super.getInstanceOfDAO();
         shareNoteDAO = ShareNoteDAO.getInstance();
+        userDAO = UserDAO.getInstance();
     }
     
     public ShareNote share(Note note, String editor, ShareNote.ShareType shareType) throws NoteServiceException {
         getInstanceOfDAO();
+        try {
+            userDAO.get(editor);
+        } catch (DAOException ex) {
+            ex.printStackTrace();
+            throw new NoteServiceException(ex.getMessage());
+        } 
         int noteId = note.getId();
       
         ShareNote shareNote = new ShareNote();

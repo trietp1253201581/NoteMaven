@@ -3,6 +3,7 @@ package com.noteapp.controller;
 import com.noteapp.note.model.Note;
 import com.noteapp.note.model.NoteBlock;
 import com.noteapp.note.model.NoteFilter;
+import com.noteapp.note.model.ShareNote;
 import com.noteapp.note.model.TextBlock;
 import com.noteapp.user.model.User;
 import com.noteapp.note.service.NoteServiceException;
@@ -16,14 +17,17 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ColorPicker;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 
 /**
@@ -53,11 +57,7 @@ public class EditNoteController extends Controller {
     @FXML
     protected Button addSurveyBlockButton;
     @FXML
-    protected ComboBox<String> fontTypeComboBox; 
-    @FXML
-    protected ComboBox<String> fontSizeComboBox;
-    @FXML
-    protected ColorPicker colorPicker;
+    protected Button shareButton;
     //Các thuộc tính còn lại
     @FXML
     protected VBox blocksLayout;
@@ -65,10 +65,13 @@ public class EditNoteController extends Controller {
     protected GridPane filterGridLayout;
     @FXML
     protected Button closeButton;
+    @FXML
+    protected HBox openedNotesLayout;
     
     protected User myUser;
     protected Note myNote;
     protected List<TextBlockController> textBlockControllers;
+    protected List<Note> openedNotes;
 
     public void setMyUser(User myUser) {
         this.myUser = myUser;
@@ -76,6 +79,10 @@ public class EditNoteController extends Controller {
     
     public void setMyNote(Note myNote) {
         this.myNote = myNote;
+    }
+
+    public void setOpenedNotes(List<Note> openedNotes) {
+        this.openedNotes = openedNotes;
     }
     
     @Override
@@ -87,7 +94,7 @@ public class EditNoteController extends Controller {
             close();
         });
         homeMenuButton.setOnAction((ActionEvent event) -> {
-            openDashboard(myUser);
+            DashboardController.open(myUser, myNote, openedNotes, stage);
         });
         noteHeaderLabel.setOnMouseClicked((MouseEvent event) -> {
             changeHeaderLabel();
@@ -106,12 +113,58 @@ public class EditNoteController extends Controller {
             newBlock.setContent("Edit here");
             addBlock(newBlock);
         });
+        addSurveyBlockButton.setOnAction((ActionEvent event) -> {
+            showAlert(Alert.AlertType.ERROR, "Private note is not sưpported by this service!");
+        });
+        shareButton.setOnAction((ActionEvent event) -> {
+            shareMyNote();
+        });
     }
     
     protected void initView() {       
         noteHeaderLabel.setText(myNote.getHeader());
+        initOpenedNotes();
         loadFilter(myNote.getFilters(), 8);
         initBlock();
+    }
+    
+    protected void initOpenedNotes() {
+        openedNotesLayout.getChildren().clear();
+        String filePath = Controller.DEFAULT_FXML_RESOURCE + "OpenedNoteCardView.fxml";
+        for (Note openedNote: openedNotes) {
+            try {
+                OpenedNoteCardController controller = new OpenedNoteCardController();
+                HBox box = controller.loadFXML(filePath, controller);
+                controller.setNote(openedNote);
+                controller.setHeader(openedNote.getHeader());
+                controller.getRemoveNote().setOnMouseClicked((MouseEvent event) -> {
+                    openedNotes.remove(controller.getNote());
+                    initOpenedNotes();
+                });
+                box.getStyleClass().clear();
+                if (openedNote.getId() == myNote.getId()) {
+                    box.getStyleClass().add("focused-opened-note-card");
+                } else {
+                    box.getStyleClass().add("free-opened-note-card");
+                }
+                box.setOnMouseClicked((MouseEvent event) -> {
+                    Note needOpenNote = controller.getNote();
+                    if (needOpenNote.isPubliced()) {
+                        try {
+                            ShareNote needOpenShareNote = shareNoteService.open(needOpenNote.getId(), myUser.getUsername());
+                            EditShareNoteController.open(myUser, needOpenShareNote, openedNotes, stage);
+                        } catch (NoteServiceException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        EditNoteController.open(myUser, needOpenNote, openedNotes, stage);
+                    }
+                });
+                openedNotesLayout.getChildren().add(box);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
     
     protected void initBlock() {
@@ -170,6 +223,53 @@ public class EditNoteController extends Controller {
         } catch (NoteServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
+    }
+
+    protected void shareMyNote() {
+        Dialog<List<String>> dialog = new Dialog<>();
+        dialog.setTitle("Share your note");
+        
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        TextField receiverField = new TextField();
+        receiverField.setPromptText("Input username of receiver!");
+        
+        ComboBox<String> shareTypeComboBox = new ComboBox<>();
+        shareTypeComboBox.getItems().addAll("Read only", "Can edit");
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(10); grid.setVgap(10);
+        grid.add(receiverField, 0, 0);
+        grid.add(shareTypeComboBox, 0, 1);
+        
+        dialog.getDialogPane().setContent(grid);
+        
+        dialog.setResultConverter(dialogButton -> {
+            List<String> results = new ArrayList<>();
+            if (dialogButton == ButtonType.OK) {
+                results.add(receiverField.getText());
+                results.add(shareTypeComboBox.getSelectionModel().getSelectedItem());
+            }
+            return results;
+        });
+        
+        dialog.showAndWait().ifPresent(result -> {
+            if (result.size() <= 1) return;
+            ShareNote.ShareType shareType;
+            if (result.get(1).equals("Can edit")) {
+                shareType = ShareNote.ShareType.CAN_EDIT;
+            } else {
+                shareType = ShareNote.ShareType.READ_ONLY;
+            }
+            String receiver = result.get(0);
+            try {
+                shareNoteService.share(myNote, receiver, shareType);
+                showAlert(Alert.AlertType.INFORMATION, "Successfully share!");
+                ShareNote shareNote = shareNoteService.open(myNote.getId(), myUser.getUsername());
+                EditShareNoteController.open(myUser, shareNote, stage);
+            } catch (NoteServiceException ex) {
+                showAlert(Alert.AlertType.ERROR, ex.getMessage());
+            }
+        });
     }
     
     protected void addBlock(TextBlock newTextBlock) {
@@ -256,22 +356,44 @@ public class EditNoteController extends Controller {
             System.err.println(e);
         }
     }
-    
-    protected void openDashboard(User user) {
+
+    public static void open(User myUser, Note myNote, Stage stage) {
         try {
-            String filePath = Controller.DEFAULT_FXML_RESOURCE + "DashboardView.fxml";
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "EditNoteView.fxml";
             
-            DashboardController controller = new DashboardController();
+            EditNoteController controller = new EditNoteController();
 
             controller.setStage(stage);
             controller.setMyUser(myUser);
+            controller.setMyNote(myNote);
+            controller.setOpenedNotes(new ArrayList<>());
             controller.loadFXMLAndSetScene(filePath, controller);
             controller.init();
             //Set scene cho stage và show
             
             controller.showFXML();
         } catch (IOException ex) {
-        showAlert(Alert.AlertType.ERROR, "Can't open dashboard");
+            showAlert(Alert.AlertType.ERROR, "Can't open edit.");
         }
-    }
+    } 
+    
+    public static void open(User myUser, Note myNote, List<Note> openedNotes, Stage stage) {
+        try {
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "EditNoteView.fxml";
+            
+            EditNoteController controller = new EditNoteController();
+
+            controller.setStage(stage);
+            controller.setMyUser(myUser);
+            controller.setMyNote(myNote);
+            controller.setOpenedNotes(openedNotes);
+            controller.loadFXMLAndSetScene(filePath, controller);
+            controller.init();
+            //Set scene cho stage và show
+            
+            controller.showFXML();
+        } catch (IOException ex) {
+            showAlert(Alert.AlertType.ERROR, "Can't open edit.");
+        }
+    } 
 }

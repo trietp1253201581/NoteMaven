@@ -19,6 +19,7 @@ F:\NoteMaven\src\main\java\com\noteapp\note\model\ShareNote.java
 F:\NoteMaven\src\main\java\com\noteapp\note\model\TextBlock.java
 F:\NoteMaven\src\main\java\com\noteapp\note\dao\INoteFilterDAO.java
 F:\NoteMaven\src\main\java\com\noteapp\note\dao\INoteDAO.java
+F:\NoteMaven\src\main\java\com\noteapp\controller\OpenedNoteCardController.java
 F:\NoteMaven\src\main\java\com\noteapp\note\dao\INoteBlockDAO.java
 F:\NoteMaven\src\main\java\com\noteapp\common\dao\DAOKeyException.java
 F:\NoteMaven\src\main\java\com\noteapp\controller\NoteFiltersController.java

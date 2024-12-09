@@ -1,11 +1,13 @@
 package com.noteapp.controller;
 
 import static com.noteapp.controller.Controller.showAlert;
+import com.noteapp.note.model.Note;
 import com.noteapp.note.model.NoteBlock;
 import com.noteapp.note.model.ShareNote;
 import com.noteapp.note.model.SurveyBlock;
 import com.noteapp.note.model.TextBlock;
 import com.noteapp.note.service.NoteServiceException;
+import com.noteapp.user.model.User;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -20,6 +22,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 /**
  *
@@ -54,6 +57,7 @@ public class EditShareNoteController extends EditNoteController {
     @Override 
     protected void initView() {
         noteHeaderLabel.setText(myShareNote.getHeader());
+        initOpenedNotes();
         loadFilter(myNote.getFilters(), 8);
         this.initBlock();
     }
@@ -208,7 +212,6 @@ public class EditShareNoteController extends EditNoteController {
                 }
             }
         }
-        System.out.println(otherSurveyBlockByHeaders);
     }
     
     protected void updateTextBlock() {
@@ -225,7 +228,7 @@ public class EditShareNoteController extends EditNoteController {
         for (int i = 0; i < surveyBlockControllers.size(); i++) {
             SurveyBlock thisBlock = surveyBlockControllers.get(i).getSurveyBlock();
             List<SurveyBlock> otherEditors = otherSurveyBlockByHeaders.get(thisBlock.getHeader());
-            System.out.println("Hello" + i + " " + otherEditors);
+
             surveyBlockControllers.get(i).setOtherEditors(otherEditors);
             surveyBlockControllers.get(i).loadItems();
         }
@@ -292,4 +295,47 @@ public class EditShareNoteController extends EditNoteController {
             }
         }
     }
+    
+    public static void open(User myUser, ShareNote myShareNote, Stage stage) {
+        try {
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "EditNoteView.fxml";
+            
+            EditShareNoteController controller = new EditShareNoteController();
+
+            controller.setStage(stage);
+            controller.setMyUser(myUser);
+            controller.setMyNote(myShareNote);
+            controller.setMyShareNote(myShareNote);
+            controller.setOpenedNotes(new ArrayList<>());
+            controller.loadFXMLAndSetScene(filePath, controller);
+            controller.init();
+            controller.setOnAutoUpdate();
+            //Set scene cho stage và show
+            
+            controller.showFXML();
+        } catch (IOException ex) {
+            showAlert(Alert.AlertType.ERROR, "Can't open view");
+        }
+    }
+    
+    public static void open(User myUser, ShareNote myShareNote, List<Note> openedNotes, Stage stage) {
+        try {
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "EditNoteView.fxml";
+            
+            EditShareNoteController controller = new EditShareNoteController();
+
+            controller.setStage(stage);
+            controller.setMyUser(myUser);
+            controller.setMyNote(myShareNote);
+            controller.setMyShareNote(myShareNote);
+            controller.setOpenedNotes(openedNotes);
+            controller.loadFXMLAndSetScene(filePath, controller);
+            controller.init();
+            //Set scene cho stage và show
+            
+            controller.showFXML();
+        } catch (IOException ex) {
+            showAlert(Alert.AlertType.ERROR, "Can't open edit.");
+        }
+    } 
 }

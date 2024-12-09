@@ -1,3 +1,19 @@
+.free-opened-note-card{
+    -fx-background-color: transparent;
+    -fx-background-radius: 0px;
+}
+.free-opened-note-card:hover{
+    -fx-background-color: transparent;
+    -fx-background-radius: 0px;
+    -fx-border-width: 0px 0px 1px 0px;
+    -fx-border-color: #000;
+}
+.focused-opened-note-card{
+    -fx-background-color: transparent;
+    -fx-background-radius: 0px;
+    -fx-border-width: 0px 0px 1px 0px;
+    -fx-border-color: #000;
+}
 .main-button{
     -fx-background-color: transparent;
     -fx-background-radius: 0px;

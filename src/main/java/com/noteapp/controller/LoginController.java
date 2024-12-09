@@ -11,6 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.Stage;
 
 /**
  * FXML Controller class cho Login GUI
@@ -44,10 +45,10 @@ public class LoginController extends Controller {
             close();
         });
         registerLabel.setOnMouseClicked((MouseEvent event) -> {
-            openRegister();
+            RegisterController.open(stage);
         });
         forgotPasswordLabel.setOnMouseClicked((MouseEvent event) -> {
-            openResetPasswordView();
+            ResetPasswordController.open(stage);
         });
     }
 
@@ -61,21 +62,17 @@ public class LoginController extends Controller {
             User user = userService.checkPassword(username, password);
             showAlert(Alert.AlertType.INFORMATION, "Successfully Login");
             //Mở Dashboard của user này
-            openDashboard(user);
+            DashboardController.open(user, stage);
         } catch (UserServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }
     }
-
-    protected void openEditNoteView(User user) {
-        
-    }
     
-    protected void openRegister() {
+    public static void open(Stage stage) {
         try {
-            String filePath = Controller.DEFAULT_FXML_RESOURCE + "RegisterView.fxml";
+            String filePath = Controller.DEFAULT_FXML_RESOURCE + "LoginView.fxml";
             
-            RegisterController controller = new RegisterController();
+            LoginController controller = new LoginController();
 
             controller.setStage(stage);
             controller.loadFXMLAndSetScene(filePath, controller);
@@ -84,44 +81,7 @@ public class LoginController extends Controller {
             
             controller.showFXML();
         } catch (IOException ex) {
-            showAlert(Alert.AlertType.ERROR, "Can't open register");
+            showAlert(Alert.AlertType.ERROR, "Can't open login");
         }
     }
-    
-    protected void openResetPasswordView() { 
-        try {
-            String filePath = Controller.DEFAULT_FXML_RESOURCE + "ResetPasswordView.fxml";
-            
-            ResetPasswordController controller = new ResetPasswordController();
-
-            controller.setStage(stage);
-            controller.loadFXMLAndSetScene(filePath, controller);
-            controller.init();
-            //Set scene cho stage và show
-            
-            controller.showFXML();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Can't open reset Password");
-        }
-    }
-    
-    protected void openDashboard(User myUser) {
-        try {
-            String filePath = Controller.DEFAULT_FXML_RESOURCE + "DashboardView.fxml";
-            
-            DashboardController controller = new DashboardController();
-
-            controller.setStage(stage);
-            controller.setMyUser(myUser);
-            controller.loadFXMLAndSetScene(filePath, controller);
-            controller.init();
-            //Set scene cho stage và show
-            
-            controller.showFXML();
-        } catch (IOException ex) {
-            showAlert(Alert.AlertType.ERROR, "Can't open dashboard");
-        }
-    }
-        
 }

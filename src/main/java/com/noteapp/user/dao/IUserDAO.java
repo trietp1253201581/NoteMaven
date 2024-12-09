@@ -38,7 +38,7 @@ public interface IUserDAO {
      * @throws DAOException Khi User đã tồn tại trong CSDL,
      * hoặc khi kết nối bị lỗi, hoặc Query không hợp lệ
      * @see User
-     * @see get
+     * @see #get(String) 
      */
     User create(User newUser) throws DAOException;
     
@@ -48,7 +48,7 @@ public interface IUserDAO {
      * @throws DAOException Khi User không tồn tại trong CSDL,
      * hoặc khi kết nối bị lỗi, hoặc Query không hợp lệ
      * @see User 
-     * @see get
+     * @see #get(String) 
      */
     void update(User user) throws DAOException;
     
@@ -57,7 +57,7 @@ public interface IUserDAO {
      * @param username username của User cần xóa
      * @throws DAOException Khi khi kết nối bị lỗi, hoặc Query không hợp lệ
      * @see User
-     * @see get
+     * @see #get(String) 
      */
     void delete(String username) throws DAOException;
 }

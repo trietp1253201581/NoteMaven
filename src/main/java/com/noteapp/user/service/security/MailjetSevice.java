@@ -1,4 +1,3 @@
-
 package com.noteapp.user.service.security;
 
 import com.mailjet.client.ClientOptions;
@@ -13,8 +12,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- *
- * @author admin
+ * Sử dụng dịch vụ Mailjet để gửi email 
+ * @author Nhóm 17
  */
 public class MailjetSevice implements MailService {
     private static final String API_KEY_PUBLIC = "00c053f4acc4c436209908626c532494";
@@ -25,6 +24,7 @@ public class MailjetSevice implements MailService {
     protected static final String EMAIL_NAME = "NoteApp Support";
     protected Email fromEmail;
     
+    //Khởi tạo các biến hằng cần thiết
     static {
         ClientOptions.ClientOptionsBuilder builder = ClientOptions.builder();
         builder.apiKey(API_KEY_PUBLIC);
@@ -34,12 +34,21 @@ public class MailjetSevice implements MailService {
         CLIENT_OPTIONS = builder.build();
     }
     
+    /**
+     * Khởi tạo Mailjet cùng với địa chỉ gửi có sẵn
+     */
     public MailjetSevice() {
         fromEmail = new Email();
         fromEmail.setAddress(EMAIL_ADDRESS);
         fromEmail.setName(EMAIL_NAME);
     }
     
+    /**
+     * Chuyển một địa chỉ email về {@link JSONObject}
+     * @param email Đối tượng chứa địa chỉ Email cần chuyển
+     * @return Một đối tượng Json chứa các thuộc tính về địa chỉ
+     * và tên email
+     */
     protected static JSONObject createEmailJSONObject(Email email) {
         JSONObject emailJSONObj = new JSONObject();
         emailJSONObj.put("Email", email.getAddress());
@@ -49,11 +58,12 @@ public class MailjetSevice implements MailService {
     
     @Override
     public boolean sendMail(Email toEmail, String subject, String content) {       
+        //Tạo JSONObject cho địa chỉ gửi
         JSONObject fromEmailJSONObject = createEmailJSONObject(fromEmail);
-        
+        //Tạo JSONObject cho địa chỉ nhận
         JSONArray toEmailsJSONArray = new JSONArray();
         toEmailsJSONArray.put(createEmailJSONObject(toEmail));
-        
+        //Tạo JSONArray để cấu hình email gửi đi
         JSONArray messagesJSONArray = new JSONArray();
         JSONObject messageJSONObject = new JSONObject();
         messageJSONObject.put(Emailv31.Message.FROM, fromEmailJSONObject);
@@ -61,7 +71,7 @@ public class MailjetSevice implements MailService {
         messageJSONObject.put(Emailv31.Message.SUBJECT, subject);
         messageJSONObject.put(Emailv31.Message.TEXTPART, content);
         messagesJSONArray.put(messageJSONObject);
-        
+        //Gửi email
         MailjetClient client = new MailjetClient(CLIENT_OPTIONS);
         MailjetRequest request = new MailjetRequest(Emailv31.resource);
         request.property(Emailv31.MESSAGES, messagesJSONArray);
@@ -75,13 +85,14 @@ public class MailjetSevice implements MailService {
     
     @Override
     public boolean sendMail(List<Email> toEmails, String subject, String content) {       
+        //Tạo JSONObject cho địa chỉ gửi
         JSONObject fromEmailJSONObject = createEmailJSONObject(fromEmail);
-        
+        //Tạo JSONArray cho các địa chỉ nhận
         JSONArray toEmailsJSONArray = new JSONArray();
         for(Email toEmail: toEmails) {
             toEmailsJSONArray.put(createEmailJSONObject(toEmail));
         }
-        
+        //Tạo JSONArray để cấu hình email gửi đi
         JSONArray messagesJSONArray = new JSONArray();
         JSONObject messageJSONObject = new JSONObject();
         messageJSONObject.put(Emailv31.Message.FROM, fromEmailJSONObject);
@@ -89,7 +100,7 @@ public class MailjetSevice implements MailService {
         messageJSONObject.put(Emailv31.Message.SUBJECT, subject);
         messageJSONObject.put(Emailv31.Message.TEXTPART, content);
         messagesJSONArray.put(messageJSONObject);
-        
+        //Gửi email
         MailjetClient client = new MailjetClient(CLIENT_OPTIONS);
         MailjetRequest request = new MailjetRequest(Emailv31.resource);
         request.property(Emailv31.MESSAGES, messagesJSONArray);

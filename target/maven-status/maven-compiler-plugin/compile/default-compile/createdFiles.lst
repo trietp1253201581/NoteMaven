@@ -10,6 +10,7 @@ com\noteapp\controller\HomeController.class
 com\noteapp\controller\Controller.class
 com\noteapp\controller\NoteFiltersController.class
 com\noteapp\user\dao\UserDAO$QueriesType.class
+com\noteapp\controller\OpenedNoteCardController.class
 com\noteapp\NoteLite.class
 com\noteapp\controller\LoginController.class
 com\noteapp\note\dao\NoteFilterDAO.class

@@ -71,6 +71,13 @@ public class UserDAO implements IUserDAO {
         return SingletonHelper.INSTANCE;
     }
     
+    /**
+     * Lấy và trả về một câu lệnh được chuẩn bị sẵn theo loại truy vấn
+     * @param queriesType loại truy vấn
+     * @return Một {@link PrepareStatement} là môt câu lệnh truy vấn SQL
+     * đã được chuẩn bị sẵn tương ứng với loại truy vấn được yêu cầu
+     * @throws SQLException Nếu kết nối tới CSDL không tồn tại
+     */
     protected PreparedStatement getPrepareStatement(QueriesType queriesType) throws SQLException {
         //Kiểm tra kết nối
         if (databaseConnection.getConnection() == null) {
@@ -94,7 +101,7 @@ public class UserDAO implements IUserDAO {
             while (resultSet.next()) {
                 User user = new User();
                 Email email = new Email();
-                //Set dữ liệu cho user
+
                 user.setName(resultSet.getString(ColumnName.name.toString()));
                 user.setUsername(resultSet.getString(ColumnName.username.toString()));
                 user.setPassword(resultSet.getString(ColumnName.password.toString()));
@@ -103,7 +110,7 @@ public class UserDAO implements IUserDAO {
                 user.setGender(User.Gender.valueOf(resultSet.getString(ColumnName.gender.toString())));
                 email.setAddress(resultSet.getString(ColumnName.email.toString()));
                 user.setEmail(email);
-                //Thêm vào list các user
+
                 users.add(user);
             }    
             return users;
@@ -127,7 +134,7 @@ public class UserDAO implements IUserDAO {
             User user = new User();
             while (resultSet.next()) {
                 Email email = new Email();
-                //Set dữ liệu từ hàng nhận được
+                
                 user.setName(resultSet.getString(ColumnName.name.toString()));
                 user.setUsername(resultSet.getString(ColumnName.username.toString()));
                 user.setPassword(resultSet.getString(ColumnName.password.toString()));

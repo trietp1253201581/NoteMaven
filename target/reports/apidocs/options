@@ -1,0 +1,28 @@
+--class-path
+'C:/Users/admin/.m2/repository/com/squareup/okio/okio-jvm/3.0.0/okio-jvm-3.0.0.jar;C:/Users/admin/.m2/repository/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.5.31/kotlin-stdlib-jdk8-1.5.31.jar;C:/Users/admin/.m2/repository/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.5.31/kotlin-stdlib-jdk7-1.5.31.jar;C:/Users/admin/.m2/repository/org/jetbrains/kotlin/kotlin-stdlib-common/1.5.31/kotlin-stdlib-common-1.5.31.jar;C:/Users/admin/.m2/repository/org/jetbrains/kotlin/kotlin-stdlib/1.6.20/kotlin-stdlib-1.6.20.jar;C:/Users/admin/.m2/repository/org/jetbrains/annotations/13.0/annotations-13.0.jar;C:/Users/admin/.m2/repository/com/google/code/gson/gson/2.9.0/gson-2.9.0.jar;C:/Users/admin/.m2/repository/com/mysql/mysql-connector-j/8.3.0/mysql-connector-j-8.3.0.jar;C:/Users/admin/.m2/repository/com/google/protobuf/protobuf-java/3.25.1/protobuf-java-3.25.1.jar;C:/Users/admin/.m2/repository/org/openjfx/javafx-controls/21.0.2/javafx-controls-21.0.2.jar;C:/Users/admin/.m2/repository/org/openjfx/javafx-graphics/21.0.2/javafx-graphics-21.0.2.jar;C:/Users/admin/.m2/repository/org/openjfx/javafx-base/21.0.2/javafx-base-21.0.2.jar;C:/Users/admin/.m2/repository/org/openjfx/javafx-fxml/21.0.2/javafx-fxml-21.0.2.jar'
+--module-path
+'C:/Users/admin/.m2/repository/org/openjfx/javafx-controls/21.0.2/javafx-controls-21.0.2-win.jar;C:/Users/admin/.m2/repository/org/json/json/20231013/json-20231013.jar;F:/NoteMaven/target/classes;C:/Users/admin/.m2/repository/org/openjfx/javafx-fxml/21.0.2/javafx-fxml-21.0.2-win.jar;C:/Users/admin/.m2/repository/com/mailjet/mailjet-client/5.2.5/mailjet-client-5.2.5.jar;C:/Users/admin/.m2/repository/com/squareup/okhttp3/okhttp/4.10.0/okhttp-4.10.0.jar;C:/Users/admin/.m2/repository/org/openjfx/javafx-graphics/21.0.2/javafx-graphics-21.0.2-win.jar;C:/Users/admin/.m2/repository/org/openjfx/javafx-base/21.0.2/javafx-base-21.0.2-win.jar'
+--patch-module
+com.noteapp='F:/NoteMaven/src/main/java'
+-encoding
+'UTF-8'
+-protected
+-source
+'21'
+--module-source-path
+'F:/NoteMaven/target/reports/apidocs/src'
+-author
+-bottom
+'Copyright &#169; 2024. All rights reserved.'
+-charset
+'UTF-8'
+-d
+'F:/NoteMaven/target/reports/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'NoteMaven 1.0-SNAPSHOT API'
+-use
+-version
+-windowtitle
+'NoteMaven 1.0-SNAPSHOT API'

@@ -1,7 +1,7 @@
 package com.noteapp.common.dao;
 
 /**
- *
+ * Ngoại lệ cho việc khóa dùng truy cập các dữ liệu là không hợp lệ.
  * @author admin
  */
 public class DAOKeyException extends DAOException {

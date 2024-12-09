@@ -1,0 +1,11 @@
+com.noteapp.common.dao
+com.noteapp.common.dbconnection
+com.noteapp.controller
+com.noteapp.note.dao
+com.noteapp.note.model
+com.noteapp.note.service
+com.noteapp
+com.noteapp.user.dao
+com.noteapp.user.model
+com.noteapp.user.service.security
+com.noteapp.user.service

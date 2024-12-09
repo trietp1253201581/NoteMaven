@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
- * @author admin
+ * Triển khai các phương thức thao tác CSDL TextBlock
+ * @author Nhóm 17
  */
 public class TextBlockDAO implements ITextBlockDAO {
     protected SQLDatabaseConnection databaseConnection;
@@ -51,25 +51,43 @@ public class TextBlockDAO implements ITextBlockDAO {
         private static final TextBlockDAO INSTANCE = new TextBlockDAO();
     }
     
+    /**
+     * Trả về một thể hiện duy nhất của DAO này
+     * @return Thể hiện duy nhất của TextBlockDAO
+     */
     public static TextBlockDAO getInstance() {
         return SingletonHelper.INSTANCE;
+    }
+    
+    /**
+     * Lấy và trả về một câu lệnh được chuẩn bị sẵn theo loại truy vấn
+     * @param queriesType loại truy vấn
+     * @return Một {@link PrepareStatement} là môt câu lệnh truy vấn SQL
+     * đã được chuẩn bị sẵn tương ứng với loại truy vấn được yêu cầu
+     * @throws SQLException Nếu kết nối tới CSDL không tồn tại hoặc
+     * xảy ra vấn đề khi tạo câu lệnh
+     * @see java.sql.Connection#prepareStatement(String)
+     */
+    protected PreparedStatement getPrepareStatement(QueriesType queriesType) throws SQLException {
+        //Kiểm tra kết nối
+        if (databaseConnection.getConnection() == null) {
+            throw new SQLException("Connection null!");
+        }
+        
+        //Lấy query và truyền vào connection
+        String query = enableQueries.get(queriesType.toString());
+        return databaseConnection.getConnection().prepareStatement(query);
     }
 
     @Override
     public List<TextBlock> getAll(int blockId) throws DAOException {
-        List<TextBlock> textBlocks = new ArrayList<>();
-        
-        if(databaseConnection.getConnection() == null) {
-            throw new FailedExecuteException();
-        }
-        String query = enableQueries.get(QueriesType.GET_ALL_BY_BLOCK.toString());  
-        
         try {
             //Thực thi truy vấn SQL và lấy kết quả là một bộ dữ liệu
-            PreparedStatement preparedStatement = databaseConnection.getConnection().prepareStatement(query);
+            PreparedStatement preparedStatement = getPrepareStatement(QueriesType.GET_ALL_BY_BLOCK);
             preparedStatement.setInt(1, blockId);
             ResultSet resultSet = preparedStatement.executeQuery();
             //Chuyển từng hàng dữ liệu sang textBlock và thêm vào list
+            List<TextBlock> textBlocks = new ArrayList<>();
             while (resultSet.next()) {
                 TextBlock textBlock = new TextBlock();
                 //Set dữ liệu cho textBlock
@@ -78,24 +96,18 @@ public class TextBlockDAO implements ITextBlockDAO {
                 textBlock.setContent(resultSet.getString(ColumnName.content.toString()));
                 textBlocks.add(textBlock);
             }    
-            //Nếu noteBlocks rỗng thì ném ngoại lệ là danh sách trống
+            
             return textBlocks;
         } catch (SQLException ex) {
-            throw new FailedExecuteException();
+            throw new FailedExecuteException(ex.getCause());
         }
     }
 
     @Override
     public void create(TextBlock newTextBlock) throws DAOException {
-        if(databaseConnection.getConnection() == null) {
-            throw new FailedExecuteException();
-        }
-        
-        String query = enableQueries.get(QueriesType.CREATE.toString());
-        
         try {
             //Thực thi truy vấn SQL và lấy kết quả là một bộ dữ liệu
-            PreparedStatement preparedStatement = databaseConnection.getConnection().prepareStatement(query);
+            PreparedStatement preparedStatement = getPrepareStatement(QueriesType.CREATE);
             preparedStatement.setInt(1, newTextBlock.getId());
             preparedStatement.setString(2, newTextBlock.getEditor());
             preparedStatement.setString(3, newTextBlock.getContent());
@@ -104,21 +116,15 @@ public class TextBlockDAO implements ITextBlockDAO {
                 throw new FailedExecuteException();
             }
         } catch (SQLException ex) {
-            throw new FailedExecuteException();
+            throw new FailedExecuteException(ex.getCause());
         }
     }
 
     @Override
     public void update(TextBlock textBlock) throws DAOException {
-        if(databaseConnection.getConnection() == null) {
-            throw new FailedExecuteException();
-        }
-        
-        String query = enableQueries.get(QueriesType.UPDATE.toString());
-        
         try {
             //Thực thi truy vấn SQL và lấy kết quả là một bộ dữ liệu
-            PreparedStatement preparedStatement = databaseConnection.getConnection().prepareStatement(query);
+            PreparedStatement preparedStatement = getPrepareStatement(QueriesType.UPDATE);
             preparedStatement.setString(1, textBlock.getContent());
             preparedStatement.setInt(2, textBlock.getId());
             preparedStatement.setString(3, textBlock.getEditor());
@@ -128,7 +134,7 @@ public class TextBlockDAO implements ITextBlockDAO {
                 throw new FailedExecuteException();
             }
         } catch (SQLException ex) {
-            throw new FailedExecuteException();
+            throw new FailedExecuteException(ex.getCause());
         }
     }
 }

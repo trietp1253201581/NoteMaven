@@ -62,45 +62,52 @@ public class NoteFilterDAO implements INoteFilterDAO {
         return SingletonHelper.INSTANCE;
     }
 
-    @Override 
-    public List<NoteFilter> getAll(int noteId) throws DAOException {
-        List<NoteFilter> noteFilters = new ArrayList<>();
-        //Kiểm tra connection có phải null không
-        if(databaseConnection.getConnection() == null) {
-            throw new FailedExecuteException();
+    /**
+     * Lấy và trả về một câu lệnh được chuẩn bị sẵn theo loại truy vấn
+     * @param queriesType loại truy vấn
+     * @return Một {@link PrepareStatement} là môt câu lệnh truy vấn SQL
+     * đã được chuẩn bị sẵn tương ứng với loại truy vấn được yêu cầu
+     * @throws SQLException Nếu kết nối tới CSDL không tồn tại hoặc
+     * xảy ra vấn đề khi tạo câu lệnh
+     * @see java.sql.Connection#prepareStatement(String)
+     */
+    protected PreparedStatement getPrepareStatement(QueriesType queriesType) throws SQLException {
+        //Kiểm tra kết nối
+        if (databaseConnection.getConnection() == null) {
+            throw new SQLException("Connection null!");
         }
-        //Câu truy vấn SQL
-        String query = enableQueries.get(QueriesType.GET_ALL_BY_NOTE.toString());
-
+        
+        //Lấy query và truyền vào connection
+        String query = enableQueries.get(queriesType.toString());
+        return databaseConnection.getConnection().prepareStatement(query);
+    }
+    
+    @Override 
+    public List<NoteFilter> getAll(int noteId) throws DAOException {    
         try {
             //Thực thi truy vấn SQL và lấy kết quả là một bộ dữ liệu
-            PreparedStatement preparedStatement = databaseConnection.getConnection().prepareStatement(query);
+            PreparedStatement preparedStatement = getPrepareStatement(QueriesType.GET_ALL_BY_NOTE);
             preparedStatement.setInt(1, noteId);
             ResultSet resultSet = preparedStatement.executeQuery();
             //Chuyển từng hàng dữ liệu sang noteFilter và thêm vào list
+            List<NoteFilter> noteFilters = new ArrayList<>();
             while (resultSet.next()) {
                 NoteFilter noteFilter = new NoteFilter();
                 //Set dữ liệu cho noteFilter
                 noteFilter.setFilter(resultSet.getString(ColumnName.filter.toString()));
                 noteFilters.add(noteFilter);
             }    
-            //Nếu noteFilters rỗng thì ném ngoại lệ là danh sách trống
+            
             return noteFilters;
         }  catch (SQLException ex) {
-            throw new FailedExecuteException();
+            throw new FailedExecuteException(ex.getCause());
         }
     }
     
     @Override
     public void create(int noteId, NoteFilter newNoteFilter) throws DAOException {
-        //Kiểm tra null
-        if(databaseConnection.getConnection() == null) {
-            throw new FailedExecuteException();
-        }
-        //Câu truy vấn SQL
-        String query = enableQueries.get(QueriesType.CREATE.toString());
         try {
-            PreparedStatement preparedStatement = databaseConnection.getConnection().prepareStatement(query);
+            PreparedStatement preparedStatement = getPrepareStatement(QueriesType.CREATE);
             //Set các tham số cho truy vấn
             preparedStatement.setInt(1, noteId);
             preparedStatement.setString(2, newNoteFilter.getFilter());
@@ -109,21 +116,14 @@ public class NoteFilterDAO implements INoteFilterDAO {
                 throw new FailedExecuteException();
             }
         } catch (SQLException ex) {
-            throw new FailedExecuteException();
+            throw new FailedExecuteException(ex.getCause());
         }
     }
  
     @Override
     public void deleteAll(int noteId) throws DAOException {
-        //Kiểm tra null
-        if(databaseConnection.getConnection() == null) {
-            throw new FailedExecuteException();
-        }
-        //Câu truy vấn SQL
-        String query = enableQueries.get(QueriesType.DELETE_ALL.toString());
-
         try {
-            PreparedStatement preparedStatement = databaseConnection.getConnection().prepareStatement(query);
+            PreparedStatement preparedStatement = getPrepareStatement(QueriesType.DELETE_ALL);
             //Set các tham số cho truy vấn
             preparedStatement.setInt(1, noteId);
 
@@ -131,7 +131,7 @@ public class NoteFilterDAO implements INoteFilterDAO {
                 throw new FailedExecuteException();
             }
         } catch (SQLException ex) {
-            throw new FailedExecuteException();
+            throw new FailedExecuteException(ex.getCause());
         }
     }
 }
