@@ -4,13 +4,16 @@ import com.noteapp.user.model.Email;
 
 /**
  * Dịch vụ xác thực bằng email
- * @author admin
+ * @author Nhóm 17
  */
 public class VerificationMailService {
     protected MailService mailService;
     protected VerificationCodeService verificationCodeService;
     protected CodeStatus codeStatus;
 
+    /**
+     * Các trạng thái có thể có của code xác thực
+     */
     public static enum CodeStatus {
         EXPIRED, TRUE, FALSE
     }

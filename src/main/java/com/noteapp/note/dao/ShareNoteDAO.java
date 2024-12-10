@@ -16,9 +16,7 @@ import java.util.Map;
 
 /**
  * Triển khai các phương thức thao tác dữ liệu với ShareNote
- * @author Nhóm 23
- * @since 06/04/2024
- * @version 1.0
+ * @author Nhóm 17
  */
 public class ShareNoteDAO implements IShareNoteDAO {
     protected SQLDatabaseConnection databaseConnection;

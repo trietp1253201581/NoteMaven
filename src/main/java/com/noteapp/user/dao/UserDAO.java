@@ -17,9 +17,7 @@ import java.util.Map;
 
 /**
  * Triển khai các phương thức thao tác dữ liệu với User
- * @author Nhóm 23
- * @since 30/03/2024
- * @version 1.0
+ * @author Nhóm 17
  */
 public class UserDAO implements IUserDAO {
     protected SQLDatabaseConnection databaseConnection;

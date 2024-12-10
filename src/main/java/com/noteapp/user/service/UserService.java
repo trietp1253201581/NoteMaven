@@ -9,7 +9,7 @@ import com.noteapp.user.model.User;
 
 /**
  * Cung cấp các service liên quan tới User
- * @author Nhóm 17\
+ * @author Nhóm 17
  * @see IUserDAO
  * @see User
  */

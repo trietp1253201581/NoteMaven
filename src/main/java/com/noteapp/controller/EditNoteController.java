@@ -4,6 +4,7 @@ import com.noteapp.note.model.Note;
 import com.noteapp.note.model.NoteBlock;
 import com.noteapp.note.model.NoteFilter;
 import com.noteapp.note.model.ShareNote;
+import com.noteapp.note.model.SurveyBlock;
 import com.noteapp.note.model.TextBlock;
 import com.noteapp.user.model.User;
 import com.noteapp.note.service.NoteServiceException;
@@ -71,6 +72,7 @@ public class EditNoteController extends Controller {
     protected User myUser;
     protected Note myNote;
     protected List<TextBlockController> textBlockControllers;
+    protected List<SurveyBlockController> surveyBlockControllers;
     protected List<Note> openedNotes;
 
     public void setMyUser(User myUser) {
@@ -89,6 +91,7 @@ public class EditNoteController extends Controller {
     public void init() {
         initServerService();
         textBlockControllers = new ArrayList<>();
+        surveyBlockControllers = new ArrayList<>();
         initView();
         closeButton.setOnAction((ActionEvent event) -> {
             close();
@@ -173,6 +176,8 @@ public class EditNoteController extends Controller {
         for(int i=0; i<blocks.size(); i++) {
             if(blocks.get(i).getBlockType() == NoteBlock.BlockType.TEXT) {
                 addBlock((TextBlock) blocks.get(i));
+            } else {
+                addBlock((SurveyBlock) blocks.get(i));
             }
         }
     }
@@ -215,6 +220,11 @@ public class EditNoteController extends Controller {
         for(int i=0; i<textBlockControllers.size(); i++) {
             TextBlock block = textBlockControllers.get(i).getTextBlock();
             block.setContent(textBlockControllers.get(i).getTextFromView());
+            myNote.getBlocks().add(block);
+        }
+        for(int i=0; i<surveyBlockControllers.size(); i++) {
+            SurveyBlock block = surveyBlockControllers.get(i).getSurveyBlock();
+            
             myNote.getBlocks().add(block);
         }
         try {
@@ -293,6 +303,32 @@ public class EditNoteController extends Controller {
              
             blocksLayout.getChildren().add(box);
             textBlockControllers.add(controller);
+        } catch (IOException ex) {
+            System.err.println(ex.getMessage());
+        }
+    }
+    
+    protected void addBlock(SurveyBlock newSurveyBlock) {
+        String filePath = Controller.DEFAULT_FXML_RESOURCE + "SurveyBlockView.fxml";
+        try {
+            SurveyBlockController controller = new SurveyBlockController();
+            
+            VBox box = controller.loadFXML(filePath, controller);
+            controller.init();
+            controller.setSurveyBlock(newSurveyBlock);
+            controller.setNoteId(myNote.getId());
+            controller.setHeader(newSurveyBlock.getHeader());
+            controller.loadItems();
+            
+            controller.getDeleteButton().setOnAction((ActionEvent event) -> {
+                int idxToDelete = controller.getSurveyBlock().getOrder()-1;
+                blocksLayout.getChildren().remove(idxToDelete);
+                myNote.getBlocks().remove(idxToDelete);
+                surveyBlockControllers.remove(idxToDelete);
+            });
+             
+            blocksLayout.getChildren().add(box);
+            surveyBlockControllers.add(controller);
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
         }

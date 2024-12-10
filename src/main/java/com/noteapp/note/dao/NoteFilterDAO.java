@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
- * @author admin
+ * Triển khai các phương thức thao tác với CSDL NoteFilter
+ * @author Nhóm 17
  */
 public class NoteFilterDAO implements INoteFilterDAO {
     protected SQLDatabaseConnection databaseConnection;

@@ -31,8 +31,7 @@ import javafx.stage.Stage;
 public class EditShareNoteController extends EditNoteController {
     private Map<String, List<TextBlock>> otherTextBlockByHeaders;
     private Map<String, List<SurveyBlock>> otherSurveyBlockByHeaders;
-    
-    protected List<SurveyBlockController> surveyBlockControllers;
+   
     protected ShareNote myShareNote;
     protected Timer updateTimer;
     protected TimerTask updateTimerTask;
@@ -194,18 +193,19 @@ public class EditShareNoteController extends EditNoteController {
     protected void getBlocksByHeader(Map<String, List<NoteBlock>> otherEditorBlocks) {
         otherTextBlockByHeaders = new HashMap<>();
         otherSurveyBlockByHeaders = new HashMap<>();
+        
         for(Map.Entry<String, List<NoteBlock>> entry: otherEditorBlocks.entrySet()) {
             String header = entry.getKey();
             List<NoteBlock> others = entry.getValue();
             
             for(int i = 0; i < others.size(); i++) {
                 if(others.get(i).getBlockType() == NoteBlock.BlockType.TEXT) {
-                    if (otherEditorBlocks.containsKey(header)) {
+                    if (!otherTextBlockByHeaders.containsKey(header)) {
                         otherTextBlockByHeaders.put(header, new ArrayList<>());
                     }
                     otherTextBlockByHeaders.get(header).add((TextBlock) others.get(i));
                 } else {
-                    if (otherEditorBlocks.containsKey(header)) {
+                    if (!otherSurveyBlockByHeaders.containsKey(header)) {
                         otherSurveyBlockByHeaders.put(header, new ArrayList<>());
                     }
                     otherSurveyBlockByHeaders.get(header).add((SurveyBlock) others.get(i));
@@ -234,6 +234,7 @@ public class EditShareNoteController extends EditNoteController {
         }
     }
     
+    @Override
     protected void addBlock(SurveyBlock newSurveyBlock) {
         String filePath = Controller.DEFAULT_FXML_RESOURCE + "SurveyBlockView.fxml";
         try {

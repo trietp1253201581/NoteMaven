@@ -2,7 +2,7 @@ package com.noteapp.note.service;
 
 /**
  * Một ngoại lệ cho các dịch vụ liên quan tới Note
- * @author admin
+ * @author Nhóm 17
  */
 public class NoteServiceException extends Exception {
 
