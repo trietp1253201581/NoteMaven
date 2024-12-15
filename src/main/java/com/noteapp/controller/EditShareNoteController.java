@@ -42,15 +42,7 @@ public class EditShareNoteController extends EditNoteController {
     
     @Override
     public void init() {
-        surveyBlockControllers = new ArrayList<>();
         super.init();
-        addSurveyBlockButton.setOnAction((ActionEvent event) -> {
-            SurveyBlock newBlock = new SurveyBlock();
-            newBlock.setOrder(myShareNote.getBlocks().size() + 1);
-            newBlock.setHeader("SurveyBlock " + newBlock.getOrder() + " of " + myNote.getHeader());
-            newBlock.setEditor(myUser.getUsername());
-            addBlock(newBlock);
-        });
     }
     
     @Override 
@@ -117,7 +109,7 @@ public class EditShareNoteController extends EditNoteController {
                 controller.setOtherEditors(otherTextBlockByHeaders.get(blockHeader));
             }
             controller.setNoteId(myNote.getId());
-            controller.setTextForView(newTextBlock.getContent());
+            controller.setText(newTextBlock.getContent());
             controller.setHeader(newTextBlock.getHeader());
             controller.initOtherEditComboBox();
             
@@ -136,7 +128,7 @@ public class EditShareNoteController extends EditNoteController {
                         break;
                     }
                 }
-                controller.setTextForView(otherTextBlock.getContent());
+                controller.setText(otherTextBlock.getContent());
             });
             controller.getUpButton().setOnAction((ActionEvent event) -> {
                 int order = controller.getTextBlock().getOrder();
@@ -174,7 +166,7 @@ public class EditShareNoteController extends EditNoteController {
         myShareNote.getBlocks().clear();
         for(int i=0; i<textBlockControllers.size(); i++) {
             TextBlock block = textBlockControllers.get(i).getTextBlock();
-            block.setContent(textBlockControllers.get(i).getTextFromView());
+            block.setContent(textBlockControllers.get(i).getText());
             myShareNote.getBlocks().add(block);
         }
         for(int i=0; i<surveyBlockControllers.size(); i++) {
@@ -277,24 +269,6 @@ public class EditShareNoteController extends EditNoteController {
             }
         }
         return new NoteBlock();
-    }
-    
-    protected void swapOrder(int firstOrder, int secondOrder) {
-        for (TextBlockController controller: textBlockControllers) {
-            if (controller.getTextBlock().getOrder() == firstOrder) {
-                controller.getTextBlock().setOrder(secondOrder);
-            } else if (controller.getTextBlock().getOrder() == secondOrder) {
-                controller.getTextBlock().setOrder(firstOrder);
-            }
-        }
-        
-        for (SurveyBlockController controller: surveyBlockControllers) {
-            if (controller.getSurveyBlock().getOrder() == firstOrder) {
-                controller.getSurveyBlock().setOrder(secondOrder);
-            } else if (controller.getSurveyBlock().getOrder() == secondOrder) {
-                controller.getSurveyBlock().setOrder(firstOrder);
-            }
-        }
     }
     
     public static void open(User myUser, ShareNote myShareNote, Stage stage) {

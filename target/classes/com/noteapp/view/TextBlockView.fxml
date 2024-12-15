@@ -4,6 +4,8 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -11,14 +13,14 @@
 
 <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="800.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <HBox prefWidth="200.0">
+      <HBox prefWidth="200.0" styleClass="block-label" stylesheets="@dashboardStyle.css">
          <children>
-            <Label fx:id="blockHeader" prefHeight="20.0" prefWidth="133.0" text="Label">
+            <Label fx:id="blockHeader" prefHeight="20.0" prefWidth="150.0" stylesheets="@dashboardStyle.css" text="Label">
                <font>
                   <Font name="System Bold Italic" size="14.0" />
                </font>
             </Label>
-            <Label fx:id="changeNotify" prefHeight="20.0" prefWidth="133.0" text="Label" textFill="#db2525">
+            <Label fx:id="changeNotify" prefHeight="20.0" prefWidth="650.0" stylesheets="@dashboardStyle.css" text="Label" textFill="#db2525">
                <font>
                   <Font name="System Italic" size="14.0" />
                </font>
@@ -27,24 +29,56 @@
       </HBox>
       <AnchorPane id="AnchorPane" prefWidth="800.0">
          <children>
-            <Label fx:id="viewText" alignment="TOP_LEFT" prefWidth="800.0" text="Label" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-               <font>
-                  <Font size="13.0" />
-               </font>
-            </Label>
-            <TextArea fx:id="editableText" prefRowCount="1" prefWidth="800.0" visible="false" wrapText="true" />
+            <TextArea fx:id="editableText" prefRowCount="1" prefWidth="800.0" wrapText="true" />
          </children>
       </AnchorPane>
-      <HBox prefWidth="200.0">
+      <HBox prefHeight="30.5" prefWidth="200.0">
          <children>
-            <Button fx:id="editButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="99.0" text="Edit" />
-            <Button fx:id="saveButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="99.0" text="Save" />
-            <Button fx:id="deleteButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="99.0" text="Delete" />
-            <Button fx:id="returnToYoursButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="99.0" text="Return to yours" />
-            <Button fx:id="switchToOtherButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="99.0" text="Switch to other" />
-            <ComboBox fx:id="otherEditComboBox" prefWidth="150.0" promptText="Other Edit By" />
-            <Button fx:id="upButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="Up" />
-            <Button fx:id="downButton" mnemonicParsing="false" prefHeight="25.0" prefWidth="40.0" text="Down" />
+            <Button fx:id="deleteButton" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" styleClass="extra-scene-button" stylesheets="@dashboardStyle.css">
+               <graphic>
+                  <ImageView fitHeight="14.0" fitWidth="14.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../image/trash.png" />
+                     </image>
+                  </ImageView>
+               </graphic></Button>
+            <Button fx:id="returnToYoursButton" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" styleClass="extra-scene-button" stylesheets="@dashboardStyle.css">
+               <graphic>
+                  <ImageView fitHeight="20.0" fitWidth="14.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../image/undo.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </Button>
+            <Button fx:id="switchToOtherButton" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" styleClass="extra-scene-button" stylesheets="@dashboardStyle.css">
+               <graphic>
+                  <ImageView fitHeight="20.0" fitWidth="14.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../image/arrow.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </Button>
+            <ComboBox fx:id="otherEditComboBox" prefHeight="17.0" prefWidth="150.0" promptText="Other Edit By" styleClass="extra-scene-button" stylesheets="@dashboardStyle.css" />
+            <Button fx:id="upButton" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" styleClass="extra-scene-button" stylesheets="@dashboardStyle.css">
+               <graphic>
+                  <ImageView fitHeight="20.0" fitWidth="14.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../image/up-arrow.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </Button>
+            <Button fx:id="downButton" mnemonicParsing="false" prefHeight="30.0" prefWidth="30.0" styleClass="extra-scene-button" stylesheets="@dashboardStyle.css">
+               <graphic>
+                  <ImageView fitHeight="20.0" fitWidth="14.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../image/down-arrow.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </Button>
          </children>
       </HBox>
    </children>

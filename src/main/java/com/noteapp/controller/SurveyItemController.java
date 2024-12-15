@@ -26,7 +26,7 @@ public class SurveyItemController extends Controller {
     public void init() {
         voted.setSelected(false);
         num.setText("0");
-        other.setText("");
+        other.setText("No one");
     }
     
     public void setChoice(String choice) {
@@ -47,6 +47,7 @@ public class SurveyItemController extends Controller {
     
     public void setOther(List<String> others) {
         if (others.isEmpty()) {
+            other.setText("No one");
             return;
         }
         String otherStr = "";

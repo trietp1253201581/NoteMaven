@@ -18,17 +18,9 @@ import javafx.scene.layout.Region;
  */
 public class TextBlockController extends Controller {
     @FXML
-    private Label viewText;
-    @FXML
     private TextArea editableText;
     @FXML
-    private Button editButton;
-    @FXML
-    private Button saveButton;
-    @FXML
     private Button deleteButton;
-    @FXML
-    private Button setToDefaultButton;
     @FXML
     private ComboBox<String> otherEditComboBox;
     @FXML
@@ -55,15 +47,6 @@ public class TextBlockController extends Controller {
         textBlock = new TextBlock();
         isEditing = false;
         
-        editButton.setOnAction((ActionEvent event) -> {
-            setEditable(true);
-            switchToEditableText();
-        });
-        
-        saveButton.setOnAction((ActionEvent event) -> {
-            setEditable(false);
-            switchToViewText();
-        });
         returnToYoursButton.setOnAction((ActionEvent event) -> {
             returnToYourContent();
         });
@@ -118,20 +101,8 @@ public class TextBlockController extends Controller {
         this.otherEditors = otherEditors;
     }
 
-    public Button getEditButton() {
-        return editButton;
-    }
-
-    public Button getSaveButton() {
-        return saveButton;
-    }
-
     public Button getDeleteButton() {
         return deleteButton;
-    }
-
-    public Button getSetToDefaultButton() {
-        return setToDefaultButton;
     }
 
     public Button getUpButton() {
@@ -174,42 +145,16 @@ public class TextBlockController extends Controller {
         return otherEditComboBox.getSelectionModel().getSelectedItem();
     }
     
-    public String getTextFromView() {
-        return viewText.getText();
-    }
-    
-    public String getTextFromArea() {
+    public String getText() {
         return editableText.getText();
     }
     
-    public void setTextForView(String text) {
-        viewText.setText(text);
-    }
-    
-    public void setTextForArea(String text) {
+    public void setText(String text) {
         editableText.setText(text);
-    }
-    
-    public void setEditable(boolean editable) {
-        viewText.setVisible(!editable);
-        editableText.setVisible(editable);
-        isEditing = editable;
-    }
-    
-    public void switchToEditableText() {        
-        editableText.setText(viewText.getText());
-        editableText.setPrefHeight(viewText.getPrefHeight());
-        editableText.setPrefRowCount(viewText.getText().split("\n").length);
-    }
-    
-    public void switchToViewText() {
-        viewText.setText(editableText.getText());
-        viewText.setPrefHeight(Region.USE_COMPUTED_SIZE);
     }
     
     public void returnToYourContent() {
         editableText.setText(textBlock.getContent());
-        switchToViewText();
     }
     
     public void setChangeNotify(List<String> hadModifiedEditors) {

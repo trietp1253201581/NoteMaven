@@ -1,13 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.noteapp.controller;
 
 import com.noteapp.note.model.SurveyBlock;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,6 +29,10 @@ public class SurveyBlockController extends Controller {
     private Button addItemButton;
     @FXML
     private Button deleteButton;
+    @FXML
+    private Button upButton;
+    @FXML
+    private Button downButton;
     
     private int noteId;
     private SurveyBlock surveyBlock;
@@ -159,6 +158,12 @@ public class SurveyBlockController extends Controller {
     }
 
     public SurveyBlock getSurveyBlock() {
+        surveyBlock.getSurveyMap().clear();
+        for (int i = 0; i < itemsController.size(); i++) {
+            String choice = itemsController.get(i).getChoice();
+            boolean isVoted = itemsController.get(i).getVoted();
+            surveyBlock.getSurveyMap().put(choice, isVoted);
+        }
         return surveyBlock;
     }
 
@@ -176,5 +181,13 @@ public class SurveyBlockController extends Controller {
     
     public Button getDeleteButton() {
         return deleteButton;
+    }
+
+    public Button getUpButton() {
+        return upButton;
+    }
+
+    public Button getDownButton() {
+        return downButton;
     }
 }

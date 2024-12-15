@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -110,14 +111,20 @@ public class EditNoteController extends Controller {
         });
         addTextBlockButton.setOnAction((ActionEvent event) -> {
             TextBlock newBlock = new TextBlock();
-            newBlock.setOrder(textBlockControllers.size() + 1);
+            int maxSize = Integer.max(textBlockControllers.size(), surveyBlockControllers.size());
+            newBlock.setOrder(maxSize + 1);
             newBlock.setHeader("Block " + newBlock.getOrder() + " of " + myNote.getHeader());
             newBlock.setEditor(myUser.getUsername());
             newBlock.setContent("Edit here");
             addBlock(newBlock);
         });
         addSurveyBlockButton.setOnAction((ActionEvent event) -> {
-            showAlert(Alert.AlertType.ERROR, "Private note is not sưpported by this service!");
+            SurveyBlock newBlock = new SurveyBlock();
+            int maxSize = Integer.max(textBlockControllers.size(), surveyBlockControllers.size());
+            newBlock.setOrder(maxSize + 1);
+            newBlock.setHeader("SurveyBlock " + newBlock.getOrder() + " of " + myNote.getHeader());
+            newBlock.setEditor(myUser.getUsername());
+            addBlock(newBlock);
         });
         shareButton.setOnAction((ActionEvent event) -> {
             shareMyNote();
@@ -219,7 +226,7 @@ public class EditNoteController extends Controller {
         myNote.getBlocks().clear();
         for(int i=0; i<textBlockControllers.size(); i++) {
             TextBlock block = textBlockControllers.get(i).getTextBlock();
-            block.setContent(textBlockControllers.get(i).getTextFromView());
+            block.setContent(textBlockControllers.get(i).getText());
             myNote.getBlocks().add(block);
         }
         for(int i=0; i<surveyBlockControllers.size(); i++) {
@@ -227,8 +234,10 @@ public class EditNoteController extends Controller {
             
             myNote.getBlocks().add(block);
         }
+        System.out.println(myNote);
         try {
             noteService.save(myNote);
+            
             showAlert(Alert.AlertType.INFORMATION, "Successfully save for " + myNote.getHeader());
         } catch (NoteServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
@@ -291,7 +300,7 @@ public class EditNoteController extends Controller {
             controller.init();
             controller.setTextBlock(newTextBlock);
             controller.setNoteId(myNote.getId());
-            controller.setTextForView(newTextBlock.getContent());
+            controller.setText(newTextBlock.getContent());
             controller.setHeader(newTextBlock.getHeader());
             
             controller.getDeleteButton().setOnAction((ActionEvent event) -> {
@@ -299,6 +308,28 @@ public class EditNoteController extends Controller {
                 blocksLayout.getChildren().remove(idxToDelete);
                 myNote.getBlocks().remove(idxToDelete);
                 textBlockControllers.remove(idxToDelete);
+            });
+            
+            controller.getUpButton().setOnAction((ActionEvent event) -> {
+                int order = controller.getTextBlock().getOrder();
+                if (order <= 1) return;
+                swapOrder(order - 1, order);
+                
+                //Swap
+                Node temp = blocksLayout.getChildren().get(order - 1);
+                blocksLayout.getChildren().remove(order - 1);
+                blocksLayout.getChildren().add(order - 2, temp);
+            });
+            
+            controller.getDownButton().setOnAction((ActionEvent event) -> {
+                int order = controller.getTextBlock().getOrder();
+                if (order >= blocksLayout.getChildren().size()) return;
+                swapOrder(order, order + 1);
+                
+                //Swap
+                Node temp = blocksLayout.getChildren().get(order);
+                blocksLayout.getChildren().remove(order);
+                blocksLayout.getChildren().add(order - 1, temp);
             });
              
             blocksLayout.getChildren().add(box);
@@ -325,6 +356,28 @@ public class EditNoteController extends Controller {
                 blocksLayout.getChildren().remove(idxToDelete);
                 myNote.getBlocks().remove(idxToDelete);
                 surveyBlockControllers.remove(idxToDelete);
+            });
+            
+            controller.getUpButton().setOnAction((ActionEvent event) -> {
+                int order = controller.getSurveyBlock().getOrder();
+                if (order <= 1) return;
+                swapOrder(order - 1, order);
+                
+                //Swap
+                Node temp = blocksLayout.getChildren().get(order - 1);
+                blocksLayout.getChildren().remove(order - 1);
+                blocksLayout.getChildren().add(order - 2, temp);
+            });
+            
+            controller.getDownButton().setOnAction((ActionEvent event) -> {
+                int order = controller.getSurveyBlock().getOrder();
+                if (order >= blocksLayout.getChildren().size()) return;
+                swapOrder(order, order + 1);
+                
+                //Swap
+                Node temp = blocksLayout.getChildren().get(order);
+                blocksLayout.getChildren().remove(order);
+                blocksLayout.getChildren().add(order - 1, temp);
             });
              
             blocksLayout.getChildren().add(box);
@@ -390,6 +443,24 @@ public class EditNoteController extends Controller {
             }
         } catch (IOException e) {
             System.err.println(e);
+        }
+    }
+    
+    protected void swapOrder(int firstOrder, int secondOrder) {
+        for (TextBlockController controller: textBlockControllers) {
+            if (controller.getTextBlock().getOrder() == firstOrder) {
+                controller.getTextBlock().setOrder(secondOrder);
+            } else if (controller.getTextBlock().getOrder() == secondOrder) {
+                controller.getTextBlock().setOrder(firstOrder);
+            }
+        }
+        
+        for (SurveyBlockController controller: surveyBlockControllers) {
+            if (controller.getSurveyBlock().getOrder() == firstOrder) {
+                controller.getSurveyBlock().setOrder(secondOrder);
+            } else if (controller.getSurveyBlock().getOrder() == secondOrder) {
+                controller.getSurveyBlock().setOrder(firstOrder);
+            }
         }
     }
 
