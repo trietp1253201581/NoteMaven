@@ -2,8 +2,12 @@ package com.noteapp.note.service;
 
 import com.noteapp.common.dao.DAOException;
 import com.noteapp.common.dao.NotExistDataException;
+import com.noteapp.note.dao.INoteBlockDAO;
+import com.noteapp.note.dao.INoteDAO;
+import com.noteapp.note.dao.INoteFilterDAO;
 import com.noteapp.note.dao.IShareNoteDAO;
-import com.noteapp.note.dao.ShareNoteDAO;
+import com.noteapp.note.dao.ISurveyBlockDAO;
+import com.noteapp.note.dao.ITextBlockDAO;
 import com.noteapp.note.model.Note;
 import com.noteapp.note.model.NoteBlock;
 import static com.noteapp.note.model.NoteBlock.BlockType.SURVEY;
@@ -12,7 +16,6 @@ import com.noteapp.note.model.ShareNote;
 import com.noteapp.note.model.SurveyBlock;
 import com.noteapp.note.model.TextBlock;
 import com.noteapp.user.dao.IUserDAO;
-import com.noteapp.user.dao.UserDAO;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,12 +28,19 @@ import java.util.List;
 public class ShareNoteService extends NoteService {
     protected IShareNoteDAO shareNoteDAO;
     protected IUserDAO userDAO;
-    
-    @Override
-    protected void getInstanceOfDAO() {
-        super.getInstanceOfDAO();
-        shareNoteDAO = ShareNoteDAO.getInstance();
-        userDAO = UserDAO.getInstance();
+
+    public ShareNoteService(IShareNoteDAO shareNoteDAO, IUserDAO userDAO, INoteDAO noteDAO, INoteFilterDAO noteFilterDAO, INoteBlockDAO noteBlockDAO, ITextBlockDAO textBlockDAO, ISurveyBlockDAO surveyBlockDAO) {
+        super(noteDAO, noteFilterDAO, noteBlockDAO, textBlockDAO, surveyBlockDAO);
+        this.shareNoteDAO = shareNoteDAO;
+        this.userDAO = userDAO;
+    }
+
+    public void setShareNoteDAO(IShareNoteDAO shareNoteDAO) {
+        this.shareNoteDAO = shareNoteDAO;
+    }
+
+    public void setUserDAO(IUserDAO userDAO) {
+        this.userDAO = userDAO;
     }
     
     /**
@@ -50,7 +60,9 @@ public class ShareNoteService extends NoteService {
      * @see DAOException
      */
     public ShareNote share(Note note, String editor, ShareNote.ShareType shareType) throws NoteServiceException {
-        getInstanceOfDAO();
+        if (userDAO == null || shareNoteDAO == null) {
+            throw new NoteServiceException("DAO is null!");
+        }
         //Kiểm tra User đã tồn tại hay chưa
         try {
             userDAO.get(editor);
@@ -134,7 +146,9 @@ public class ShareNoteService extends NoteService {
      * @see DAOException
      */
     public ShareNote open(int noteId, String editor) throws NoteServiceException {
-        getInstanceOfDAO();
+        if (shareNoteDAO == null) {
+            throw new NoteServiceException("DAO is null!");
+        }
         //Trước hết mở Note
         Note note = super.open(noteId);
         //Mở phiên bản Note của editor
@@ -169,7 +183,9 @@ public class ShareNoteService extends NoteService {
      * @see #open(int, String) 
      */
     public List<ShareNote> getAllReceived(String editor) throws NoteServiceException {
-        getInstanceOfDAO();
+        if (shareNoteDAO == null) {
+            throw new NoteServiceException("DAO is null!");
+        }
         try {
             List<ShareNote> shareNotes = shareNoteDAO.getAll(editor);
             List<ShareNote> receivedNotes = new ArrayList<>();

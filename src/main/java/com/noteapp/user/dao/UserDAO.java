@@ -35,7 +35,7 @@ public class UserDAO implements IUserDAO {
      * Tên các cột trong CSDL
      */
     protected static enum ColumnName {
-        name, username, password, birthday, school, gender, email;
+        name, username, password, birthday, school, gender, email, is_locked;
     }
     
     /**
@@ -108,6 +108,7 @@ public class UserDAO implements IUserDAO {
                 user.setGender(User.Gender.valueOf(resultSet.getString(ColumnName.gender.toString())));
                 email.setAddress(resultSet.getString(ColumnName.email.toString()));
                 user.setEmail(email);
+                user.setLocked(Boolean.parseBoolean(resultSet.getString(ColumnName.is_locked.toString())));
 
                 users.add(user);
             }    
@@ -141,6 +142,7 @@ public class UserDAO implements IUserDAO {
                 user.setGender(User.Gender.valueOf(resultSet.getString(ColumnName.gender.toString())));
                 email.setAddress(resultSet.getString(ColumnName.email.toString()));
                 user.setEmail(email);
+                user.setLocked(Boolean.parseBoolean(resultSet.getString(ColumnName.is_locked.toString())));
             }
             
             //Nếu ko tồn tại thì ném ra ngoại lệ
@@ -166,6 +168,7 @@ public class UserDAO implements IUserDAO {
             preparedStatement.setString(5, newUser.getSchool());
             preparedStatement.setString(6, newUser.getGender().toString());
             preparedStatement.setString(7, newUser.getEmail().getAddress());
+            preparedStatement.setString(7, String.valueOf(newUser.isLocked()));
             
             //Nếu không hàng nào được tạo mới thì thông báo lỗi
             if (preparedStatement.executeUpdate() <= 0) {
@@ -189,7 +192,8 @@ public class UserDAO implements IUserDAO {
             preparedStatement.setString(4, user.getSchool());
             preparedStatement.setString(5, user.getGender().toString());
             preparedStatement.setString(6, user.getEmail().getAddress());
-            preparedStatement.setString(7, user.getUsername());
+            preparedStatement.setString(7, String.valueOf(user.isLocked()));
+            preparedStatement.setString(8, user.getUsername());
             
             //Nếu không hàng nào bị thay đổi thì thông báo lỗi
             if (preparedStatement.executeUpdate() <= 0) {

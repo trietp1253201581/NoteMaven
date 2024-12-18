@@ -1,6 +1,10 @@
 package com.noteapp.controller;
 
+import com.noteapp.user.dao.AdminDAO;
+import com.noteapp.user.dao.UserDAO;
+import com.noteapp.user.model.Admin;
 import com.noteapp.user.model.User;
+import com.noteapp.user.service.UserService;
 import com.noteapp.user.service.UserServiceException;
 import java.io.IOException;
 import javafx.event.ActionEvent;
@@ -20,7 +24,7 @@ import javafx.stage.Stage;
  * @since 31/03/2024
  * @version 1.0
  */
-public class LoginController extends Controller {   
+public class LoginController extends InitableController {   
     //Các thuộc tính FXML
     @FXML
     private Button loginButton;
@@ -34,10 +38,12 @@ public class LoginController extends Controller {
     private Button closeButton;
     @FXML
     private Label forgotPasswordLabel;
+    
+    protected UserService userService;
         
     @Override
     public void init() {
-        initServerService();
+        userService = new UserService(UserDAO.getInstance(), AdminDAO.getInstance());
         loginButton.setOnAction((ActionEvent event) -> {
             login();
         });
@@ -59,10 +65,19 @@ public class LoginController extends Controller {
       
         //Kiểm tra thông tin đăng nhập
         try { 
-            User user = userService.checkPassword(username, password);
-            showAlert(Alert.AlertType.INFORMATION, "Successfully Login");
-            //Mở Dashboard của user này
-            DashboardController.open(user, stage);
+            boolean isAdmin = userService.isAdmin(username);
+            if (!isAdmin) {
+                User user = userService.checkUser(username, password);
+                showAlert(Alert.AlertType.INFORMATION, "Successfully Login");
+                //Mở Dashboard của user này
+                DashboardController.open(user, stage);
+            } else {
+                userService.checkAdmin(username, password);
+                showAlert(Alert.AlertType.INFORMATION, "Successfully Login");
+                //Mở Dashboard của user này
+                AdminDashboardController.open(stage);
+            }
+            
         } catch (UserServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
         }

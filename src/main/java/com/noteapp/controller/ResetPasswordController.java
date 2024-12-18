@@ -1,6 +1,9 @@
 package com.noteapp.controller;
 
+import com.noteapp.user.dao.AdminDAO;
+import com.noteapp.user.dao.UserDAO;
 import com.noteapp.user.model.Email;
+import com.noteapp.user.service.UserService;
 import com.noteapp.user.service.security.MailjetSevice;
 import com.noteapp.user.service.security.SixNumVerificationCodeService;
 import com.noteapp.user.service.security.VerificationMailService;
@@ -15,7 +18,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-public class ResetPasswordController extends Controller {
+public class ResetPasswordController extends InitableController {
     @FXML
     private Button closeButton;
     @FXML
@@ -33,9 +36,12 @@ public class ResetPasswordController extends Controller {
     @FXML
     private Button verifyCodeButton;
 
+    protected UserService userService;
+    protected VerificationMailService verificationMailService;
+    
     @Override
     public void init() {
-        initServerService();
+        userService = new UserService(UserDAO.getInstance(), AdminDAO.getInstance());
         initScene();
         closeButton.setOnAction((ActionEvent event) -> {
             close();

@@ -1,7 +1,10 @@
 package com.noteapp.controller;
 
+import com.noteapp.user.dao.AdminDAO;
+import com.noteapp.user.dao.UserDAO;
 import com.noteapp.user.model.Email;
 import com.noteapp.user.model.User;
+import com.noteapp.user.service.UserService;
 import com.noteapp.user.service.security.MailjetSevice;
 import com.noteapp.user.service.security.SixNumVerificationCodeService;
 import com.noteapp.user.service.security.VerificationMailService;
@@ -30,7 +33,7 @@ import javafx.stage.Stage;
  * @since 31/03/2024
  * @version 1.0
  */
-public class RegisterController extends Controller {
+public class RegisterController extends InitableController {
     //Các thuộc tính FXML    
     @FXML
     private TextField nameField;
@@ -73,9 +76,12 @@ public class RegisterController extends Controller {
     @FXML
     private Button closeButton;
     
+    protected UserService userService;
+    protected VerificationMailService verificationMailService;
+    
     @Override
     public void init() {
-        initServerService();
+        userService = new UserService(UserDAO.getInstance(), AdminDAO.getInstance());
         initScene();
         registerButton.setOnAction((ActionEvent event) -> {
             register();

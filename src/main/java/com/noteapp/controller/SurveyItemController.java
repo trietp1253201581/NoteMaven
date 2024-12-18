@@ -10,7 +10,7 @@ import javafx.scene.control.RadioButton;
  *
  * @author admin
  */
-public class SurveyItemController extends Controller {
+public class SurveyItemController extends InitableController {
     @FXML
     private Label choice;
     @FXML

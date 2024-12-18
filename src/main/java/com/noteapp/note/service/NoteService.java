@@ -7,11 +7,6 @@ import com.noteapp.note.dao.INoteDAO;
 import com.noteapp.note.dao.INoteFilterDAO;
 import com.noteapp.note.dao.ISurveyBlockDAO;
 import com.noteapp.note.dao.ITextBlockDAO;
-import com.noteapp.note.dao.NoteBlockDAO;
-import com.noteapp.note.dao.NoteDAO;
-import com.noteapp.note.dao.NoteFilterDAO;
-import com.noteapp.note.dao.SurveyBlockDAO;
-import com.noteapp.note.dao.TextBlockDAO;
 import com.noteapp.note.model.Note;
 import com.noteapp.note.model.NoteBlock;
 import com.noteapp.note.model.NoteFilter;
@@ -36,20 +31,34 @@ public class NoteService {
     protected ITextBlockDAO textBlockDAO;
     protected ISurveyBlockDAO surveyBlockDAO;
 
-    public NoteService() {
-        
+    public NoteService(INoteDAO noteDAO, INoteFilterDAO noteFilterDAO, INoteBlockDAO noteBlockDAO, ITextBlockDAO textBlockDAO, ISurveyBlockDAO surveyBlockDAO) {
+        this.noteDAO = noteDAO;
+        this.noteFilterDAO = noteFilterDAO;
+        this.noteBlockDAO = noteBlockDAO;
+        this.textBlockDAO = textBlockDAO;
+        this.surveyBlockDAO = surveyBlockDAO;
     }
-    
-    /**
-     * Lấy các thể hiện tương ứng cho các DAO
-     */
-    protected void getInstanceOfDAO() {
-        noteDAO = NoteDAO.getInstance();
-        noteFilterDAO = NoteFilterDAO.getInstance();
-        noteBlockDAO = NoteBlockDAO.getInstance();
-        textBlockDAO = TextBlockDAO.getInstance();
-        surveyBlockDAO = SurveyBlockDAO.getInstance();
+
+    public void setNoteDAO(INoteDAO noteDAO) {
+        this.noteDAO = noteDAO;
     }
+
+    public void setNoteFilterDAO(INoteFilterDAO noteFilterDAO) {
+        this.noteFilterDAO = noteFilterDAO;
+    }
+
+    public void setNoteBlockDAO(INoteBlockDAO noteBlockDAO) {
+        this.noteBlockDAO = noteBlockDAO;
+    }
+
+    public void setTextBlockDAO(ITextBlockDAO textBlockDAO) {
+        this.textBlockDAO = textBlockDAO;
+    }
+
+    public void setSurveyBlockDAO(ISurveyBlockDAO surveyBlockDAO) {
+        this.surveyBlockDAO = surveyBlockDAO;
+    }
+
     
     /**
      * Tạo một {@link Note} mới và lưu vào trong CSDL
@@ -65,7 +74,9 @@ public class NoteService {
      * @see DAOException
      */
     public Note create(Note newNote) throws NoteServiceException {
-        getInstanceOfDAO();
+        if (noteDAO == null || noteFilterDAO == null) {
+            throw new NoteServiceException("DAO is null!");
+        }
         int noteId = newNote.getId();
         //Kiểm tra note đã tồn tại hay chưa
         try {          
@@ -106,7 +117,9 @@ public class NoteService {
      * @see DAOException
      */
     public Note delete(int noteId) throws NoteServiceException {
-        getInstanceOfDAO();
+        if (noteDAO == null) {
+            throw new NoteServiceException("DAO is null!");
+        }
         try {
             //Lấy Note bằng cách mở
             Note deletedNote = this.open(noteId);
@@ -129,7 +142,9 @@ public class NoteService {
      * @see DAOException
      */
     public List<Note> getAll(String author) throws NoteServiceException {
-        getInstanceOfDAO();
+        if (noteDAO == null) {
+            throw new NoteServiceException("DAO is null!");
+        }
         try {
             List<Note> notes = noteDAO.getAll(author);
             List<Note> returnNotes = new ArrayList<>();
@@ -154,7 +169,9 @@ public class NoteService {
      * @see DAOException
      */
     public Note open(int noteId) throws NoteServiceException {
-        getInstanceOfDAO();
+        if (noteDAO == null || noteFilterDAO == null) {
+            throw new NoteServiceException("DAO is null!");
+        }
         try {
             //Lấy các thông tin cơ bản
             Note note = noteDAO.get(noteId);
@@ -186,7 +203,9 @@ public class NoteService {
      * @see #saveBlocks(int, List) 
      */
     public Note save(Note note) throws NoteServiceException {
-        getInstanceOfDAO();
+        if (noteDAO == null || noteFilterDAO == null) {
+            throw new NoteServiceException("DAO is null!");
+        }
         int noteId = note.getId();
         //Kiểm tra note đã tồn tại chưa
         try {
@@ -228,7 +247,10 @@ public class NoteService {
      * @see TextBlock
      * @see SurveyBlock
      */
-    protected List<NoteBlock> getAllBlocks(int noteId) throws DAOException {
+    protected List<NoteBlock> getAllBlocks(int noteId) throws DAOException, NoteServiceException {
+        if (noteBlockDAO == null || textBlockDAO == null || surveyBlockDAO == null) {
+            throw new NoteServiceException("DAO is null!");
+        }
         //Lấy các thông tin cơ bản của block trước
         List<NoteBlock> noteBlocks = noteBlockDAO.getAll(noteId);
         List<NoteBlock> returnBlocks = new ArrayList<>();
@@ -270,7 +292,10 @@ public class NoteService {
      * @see TextBlock
      * @see SurveyBlock
      */
-    protected List<NoteBlock> getAllBlocks(int noteId, String editor) throws DAOException {
+    protected List<NoteBlock> getAllBlocks(int noteId, String editor) throws DAOException, NoteServiceException {
+        if (noteBlockDAO == null || textBlockDAO == null || surveyBlockDAO == null) {
+            throw new NoteServiceException("DAO is null!");
+        }
         List<NoteBlock> noteBlocks = noteBlockDAO.getAll(noteId);
         List<NoteBlock> returnBlocks = new ArrayList<>();
         for(NoteBlock noteBlock: noteBlocks) {
@@ -312,7 +337,10 @@ public class NoteService {
      * @see TextBlock
      * @see SurveyBlock
      */
-    protected void createBlock(int noteId, NoteBlock newBlock) throws DAOException {
+    protected void createBlock(int noteId, NoteBlock newBlock) throws DAOException, NoteServiceException {
+        if (noteBlockDAO == null || textBlockDAO == null || surveyBlockDAO == null) {
+            throw new NoteServiceException("DAO is null!");
+        }
         newBlock = noteBlockDAO.create(noteId, newBlock);
         switch (newBlock.getBlockType()) {
             case TEXT -> {
@@ -338,7 +366,10 @@ public class NoteService {
      * @see TextBlock
      * @see SurveyBlock
      */
-    protected void updateBlock(int noteId, NoteBlock needUpdateBlock) throws DAOException {
+    protected void updateBlock(int noteId, NoteBlock needUpdateBlock) throws DAOException, NoteServiceException {
+        if (noteBlockDAO == null || textBlockDAO == null || surveyBlockDAO == null) {
+            throw new NoteServiceException("DAO is null!");
+        }
         noteBlockDAO.update(noteId, needUpdateBlock);
         switch (needUpdateBlock.getBlockType()) {
             case TEXT -> {
@@ -358,7 +389,10 @@ public class NoteService {
      * @throws DAOException Xảy ra khi các thao tác với CSDL tương ứng
      * bị lỗi
      */
-    protected void deleteBlock(int blockId) throws DAOException {
+    protected void deleteBlock(int blockId) throws DAOException, NoteServiceException {
+        if (noteBlockDAO == null) {
+            throw new NoteServiceException("DAO is null!");
+        }
         noteBlockDAO.delete(blockId);
     }
     
@@ -375,7 +409,7 @@ public class NoteService {
      * @see TextBlock
      * @see SurveyBlock
      */
-    protected void saveBlocks(int noteId, List<NoteBlock> noteBlocks) throws DAOException {
+    protected void saveBlocks(int noteId, List<NoteBlock> noteBlocks) throws DAOException, NoteServiceException {
         //Lấy các block của phiên bản note này
         String editor = noteBlocks.get(0).getEditor();
         List<NoteBlock> blocksInDB = this.getAllBlocks(noteId, editor);

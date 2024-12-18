@@ -1,13 +1,24 @@
 package com.noteapp.controller;
 
+import com.noteapp.note.dao.NoteBlockDAO;
+import com.noteapp.note.dao.NoteDAO;
+import com.noteapp.note.dao.NoteFilterDAO;
+import com.noteapp.note.dao.ShareNoteDAO;
+import com.noteapp.note.dao.SurveyBlockDAO;
+import com.noteapp.note.dao.TextBlockDAO;
 import com.noteapp.user.model.Email;
 import com.noteapp.note.model.Note;
 import com.noteapp.note.model.NoteBlock;
 import com.noteapp.note.model.NoteFilter;
 import com.noteapp.note.model.ShareNote;
 import com.noteapp.note.model.TextBlock;
+import com.noteapp.note.service.NoteService;
 import com.noteapp.user.model.User;
 import com.noteapp.note.service.NoteServiceException;
+import com.noteapp.note.service.ShareNoteService;
+import com.noteapp.user.dao.AdminDAO;
+import com.noteapp.user.dao.UserDAO;
+import com.noteapp.user.service.UserService;
 import com.noteapp.user.service.UserServiceException;
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +56,7 @@ import javafx.stage.Stage;
  * @since 07/04/2024
  * @version 1.0
  */
-public class DashboardController extends Controller {
+public class DashboardController extends InitableController {
     //Các thuộc tính FXML của form dashboard chung
     @FXML 
     private BorderPane extraServiceScene;
@@ -162,9 +173,18 @@ public class DashboardController extends Controller {
     private List<ShareNote> mySharedNotes;
     private List<Note> openedNotes;
     
+    protected UserService userService;
+    protected NoteService noteService;
+    protected ShareNoteService shareNoteService;
+    
     @Override
     public void init() {
-        initServerService();
+        userService = new UserService(UserDAO.getInstance(), AdminDAO.getInstance());
+        noteService = new NoteService(NoteDAO.getInstance(), NoteFilterDAO.getInstance(), 
+                NoteBlockDAO.getInstance(), TextBlockDAO.getInstance(), SurveyBlockDAO.getInstance());
+        shareNoteService = new ShareNoteService(ShareNoteDAO.getInstance(), UserDAO.getInstance(), 
+                NoteDAO.getInstance(), NoteFilterDAO.getInstance(), 
+                NoteBlockDAO.getInstance(), TextBlockDAO.getInstance(), SurveyBlockDAO.getInstance());
         initView();
         closeButton.setOnAction((ActionEvent event) -> {
             super.close();

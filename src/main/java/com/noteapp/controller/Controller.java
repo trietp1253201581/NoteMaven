@@ -1,9 +1,5 @@
 package com.noteapp.controller;
 
-import com.noteapp.user.service.security.VerificationMailService;
-import com.noteapp.note.service.NoteService;
-import com.noteapp.note.service.ShareNoteService;
-import com.noteapp.user.service.UserService;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
@@ -19,26 +15,12 @@ import javafx.stage.Stage;
  *
  * @author admin
  */
-public class Controller {
+public abstract class Controller {
     protected double posX, posY;
-    protected UserService userService;
-    protected NoteService noteService;
-    protected ShareNoteService shareNoteService;
-    protected VerificationMailService verificationMailService;
     protected Stage stage;
     protected Scene scene;
     
     public static final String DEFAULT_FXML_RESOURCE = "/com/noteapp/view/";
-    
-    public void init() {
-        initServerService();
-    }
-    
-    public void initServerService() {
-        userService = new UserService();
-        noteService = new NoteService();
-        shareNoteService = new ShareNoteService();
-    }
     
     public void setStage(Stage stage) {
         this.stage = stage;

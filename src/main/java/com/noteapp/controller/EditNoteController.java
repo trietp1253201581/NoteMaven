@@ -1,13 +1,22 @@
 package com.noteapp.controller;
 
+import com.noteapp.note.dao.NoteBlockDAO;
+import com.noteapp.note.dao.NoteDAO;
+import com.noteapp.note.dao.NoteFilterDAO;
+import com.noteapp.note.dao.ShareNoteDAO;
+import com.noteapp.note.dao.SurveyBlockDAO;
+import com.noteapp.note.dao.TextBlockDAO;
 import com.noteapp.note.model.Note;
 import com.noteapp.note.model.NoteBlock;
 import com.noteapp.note.model.NoteFilter;
 import com.noteapp.note.model.ShareNote;
 import com.noteapp.note.model.SurveyBlock;
 import com.noteapp.note.model.TextBlock;
+import com.noteapp.note.service.NoteService;
 import com.noteapp.user.model.User;
 import com.noteapp.note.service.NoteServiceException;
+import com.noteapp.note.service.ShareNoteService;
+import com.noteapp.user.dao.UserDAO;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -37,7 +46,7 @@ import javafx.stage.Stage;
  *
  * @author admin
  */
-public class EditNoteController extends Controller {
+public class EditNoteController extends InitableController {
     //Các thuộc tính chung
     @FXML 
     protected Label noteHeaderLabel;
@@ -75,6 +84,8 @@ public class EditNoteController extends Controller {
     protected List<TextBlockController> textBlockControllers;
     protected List<SurveyBlockController> surveyBlockControllers;
     protected List<Note> openedNotes;
+    protected NoteService noteService;
+    protected ShareNoteService shareNoteService;
 
     public void setMyUser(User myUser) {
         this.myUser = myUser;
@@ -88,9 +99,15 @@ public class EditNoteController extends Controller {
         this.openedNotes = openedNotes;
     }
     
+    
+    
     @Override
     public void init() {
-        initServerService();
+        noteService = new NoteService(NoteDAO.getInstance(), NoteFilterDAO.getInstance(), 
+                NoteBlockDAO.getInstance(), TextBlockDAO.getInstance(), SurveyBlockDAO.getInstance());
+        shareNoteService = new ShareNoteService(ShareNoteDAO.getInstance(), UserDAO.getInstance(), 
+                NoteDAO.getInstance(), NoteFilterDAO.getInstance(), 
+                NoteBlockDAO.getInstance(), TextBlockDAO.getInstance(), SurveyBlockDAO.getInstance());
         textBlockControllers = new ArrayList<>();
         surveyBlockControllers = new ArrayList<>();
         initView();

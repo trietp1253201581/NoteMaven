@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.noteapp.controller;
 
 import com.noteapp.note.model.Note;
@@ -21,11 +17,6 @@ public class RecentlyNoteCardController extends Controller {
     private Text editor;
     
     private Note note;
-    
-    @Override
-    public void init() {
-        
-    }
     
     public void setData(Note note) {
         this.note = note;

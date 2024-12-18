@@ -16,7 +16,7 @@ public class OpenedNoteCardController extends Controller {
     private ImageView removeNote;
     
     private Note note;
-
+    
     public Note getNote() {
         return note;
     }
