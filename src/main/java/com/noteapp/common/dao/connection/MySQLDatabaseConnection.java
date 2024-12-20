@@ -1,4 +1,4 @@
-package com.noteapp.common.dbconnection;
+package com.noteapp.common.dao.connection;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -21,7 +21,6 @@ public class MySQLDatabaseConnection extends SQLDatabaseConnection {
         super.url = url;
         super.username = username;
         super.password = password;
-        super.enableQueries = new HashMap<>();
     }
     
     /**
@@ -36,7 +35,6 @@ public class MySQLDatabaseConnection extends SQLDatabaseConnection {
         url = "jdbc:mysql://" + host + ":" + port + "/" + database;
         super.username = username;
         super.password = password;
-        super.enableQueries = new HashMap<>();
     }
     
     @Override
@@ -44,16 +42,16 @@ public class MySQLDatabaseConnection extends SQLDatabaseConnection {
         //Gọi đối tượng Driver để kết nối
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException classNotFoundException) {
-            classNotFoundException.printStackTrace();
+        } catch (ClassNotFoundException ex) {
+            ex.printStackTrace();
         }
         //Tạo 1 connection
         connection = null;
         //Connect tới database với các thông tin đã cho
         try {
             connection = DriverManager.getConnection(url, username, password);
-        } catch (SQLException sQLException) {
-            sQLException.printStackTrace();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
     }
 }

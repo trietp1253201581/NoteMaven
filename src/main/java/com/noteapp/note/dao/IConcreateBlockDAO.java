@@ -1,17 +1,16 @@
 package com.noteapp.note.dao;
 
 import com.noteapp.common.dao.DAOException;
-import com.noteapp.note.model.SurveyBlock;
+import com.noteapp.note.model.NoteBlock;
 import java.util.List;
 
 /**
  *
  * @author admin
  */
-public interface ISurveyBlockDAO {
-    
+public interface IConcreateBlockDAO<T extends NoteBlock> {
     /**
-     * Lấy tất cả các phiên bản của một {@link SurveyBlock} (với các editor khác
+     * Lấy tất cả các phiên bản của một {@link NoteBlock} dạng T (với các editor khác
      * nhau) đối với cùng một NoteBlock
      * @param blockId id của NoteBlock
      * @return Một List chứa các phiên bản chỉnh sửa bởi các editor khác nhau
@@ -19,22 +18,22 @@ public interface ISurveyBlockDAO {
      * @throws DAOException Xảy ra khi có lỗi về kết nối và câu lệnh
      * @see com.noteapp.note.model.NoteBlock
      */
-    List<SurveyBlock> getAll(int blockId) throws DAOException;
+    List<T> getAll(int blockId) throws DAOException;
     
     /**
-     * Tạo một {@link SurveyBlock} mới và lưu vào CSDL. Để có thể tạo được thành
-     * công thì SurveyBlock này phải là một NoteBlock đã tồn tại và editor cũng phải
+     * Tạo một {@link NoteBlock} dạng T dạng T mới và lưu vào CSDL. Để có thể tạo được thành
+     * công thì {@link NoteBlock} dạng T này phải là một NoteBlock đã tồn tại và editor cũng phải
      * là một User đã tồn tại trong CSDL
-     * @param newSurveyBlock SurveyBlock cần tạo
+     * @param newBlock {@link NoteBlock} dạng T cần tạo
      * @throws DAOException Xảy ra khi có lỗi về kết nối, câu lệnh và khóa ngoài
      * @see com.noteapp.note.model.NoteBlock
      */
-    void create(SurveyBlock newSurveyBlock) throws DAOException;
+    void create(T newBlock) throws DAOException;
     
     /**
-     * Cập nhật một {@link SurveyBlock} trong CSDL
-     * @param surveyBlock SurveyBlock cần chỉnh sửa
+     * Cập nhật một {@link NoteBlock} dạng T trong CSDL
+     * @param block {@link NoteBlock} dạng T cần chỉnh sửa
      * @throws DAOException Xảy ra khi có lỗi về kết nối, câu lệnh
      */
-    void update(SurveyBlock surveyBlock) throws DAOException;
+    void update(T block) throws DAOException;
 }

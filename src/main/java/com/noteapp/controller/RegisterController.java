@@ -1,9 +1,9 @@
 package com.noteapp.controller;
 
-import com.noteapp.user.dao.AdminDAO;
 import com.noteapp.user.dao.UserDAO;
 import com.noteapp.user.model.Email;
 import com.noteapp.user.model.User;
+import com.noteapp.user.service.IUserService;
 import com.noteapp.user.service.UserService;
 import com.noteapp.user.service.security.MailjetSevice;
 import com.noteapp.user.service.security.SixNumVerificationCodeService;
@@ -76,12 +76,12 @@ public class RegisterController extends InitableController {
     @FXML
     private Button closeButton;
     
-    protected UserService userService;
+    protected IUserService userService;
     protected VerificationMailService verificationMailService;
     
     @Override
     public void init() {
-        userService = new UserService(UserDAO.getInstance(), AdminDAO.getInstance());
+        userService = new UserService(UserDAO.getInstance());
         initScene();
         registerButton.setOnAction((ActionEvent event) -> {
             register();
@@ -169,7 +169,7 @@ public class RegisterController extends InitableController {
         Email email = new Email();
         email.setAddress(emailAddressField.getText());
         email.setName(emailNameField.getText());
-        if(!email.checkEmailAddress()) {
+        if(!email.checkAddress()) {
             errorEmailFieldLabel.setVisible(true);
         }
         newUser.setEmail(email);

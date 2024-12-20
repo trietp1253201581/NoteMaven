@@ -1,43 +1,23 @@
-package com.noteapp.common.dbconnection;
+package com.noteapp.common.dao.sql;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.Connection;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
- *  Connection tới Database
- * @author admin
+ * Triển khai các phương thức đọc SQL
+ * @author Nhóm 17
  * @version 1.0
  */
-public abstract class SQLDatabaseConnection {
-    protected Connection connection;
-    protected String url;
-    protected String username;
-    protected String password;
-    protected Map<String, String> enableQueries;
-    
+public class SQLReader implements ISQLReader {
     protected static final String COMMENT_PREFIX = "--";
     protected static final String LINE_DELIMITER = " ";
     
-    /**
-     * Connect tới cơ sở dữ liệu
-     * @see java.sql.Connection
-     */
-    public abstract void connect();
-    
-    public Connection getConnection() {
-        return connection;
-    }
-    
-    /**
-     * Đọc một file (.sql) và lấy dữ liệu vào
-     * các Query có thể xử lý
-     * @param filePath đường dẫn tới File .sql
-     */
-    public void readSQL(String filePath) {
+    @Override
+    public Map<String, String> readSQL(String filePath) {
+        Map<String, String> enableQueries = new HashMap<>();
         try {
             FileReader fileReader = new FileReader(filePath);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
@@ -45,6 +25,7 @@ public abstract class SQLDatabaseConnection {
             String line;
             String queryName = null;
             StringBuilder query = new StringBuilder();
+            
             //Lần lượt đọc từng dòng dữ liệu
             while((line = bufferedReader.readLine()) != null) {
                 //Nếu bắt đầu bằng dấu -- thì đây là dòng key, còn không thì
@@ -60,14 +41,10 @@ public abstract class SQLDatabaseConnection {
                     query.append(LINE_DELIMITER);
                 }
             }
-        } catch (FileNotFoundException fileNotFoundException) {
-            fileNotFoundException.printStackTrace();
-        } catch (IOException iOException) {
-            iOException.printStackTrace();
-        }
-    }
-
-    public Map<String, String> getEnableQueries() {
+            
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } 
         return enableQueries;
     }
 }

@@ -12,6 +12,8 @@ import com.noteapp.note.model.NoteFilter;
 import com.noteapp.note.model.ShareNote;
 import com.noteapp.note.model.SurveyBlock;
 import com.noteapp.note.model.TextBlock;
+import com.noteapp.note.service.INoteService;
+import com.noteapp.note.service.IShareNoteService;
 import com.noteapp.note.service.NoteService;
 import com.noteapp.user.model.User;
 import com.noteapp.note.service.NoteServiceException;
@@ -84,8 +86,8 @@ public class EditNoteController extends InitableController {
     protected List<TextBlockController> textBlockControllers;
     protected List<SurveyBlockController> surveyBlockControllers;
     protected List<Note> openedNotes;
-    protected NoteService noteService;
-    protected ShareNoteService shareNoteService;
+    protected INoteService noteService;
+    protected IShareNoteService shareNoteService;
 
     public void setMyUser(User myUser) {
         this.myUser = myUser;
@@ -189,7 +191,6 @@ public class EditNoteController extends InitableController {
                 });
                 openedNotesLayout.getChildren().add(box);
             } catch (IOException ex) {
-                ex.printStackTrace();
             }
         }
     }

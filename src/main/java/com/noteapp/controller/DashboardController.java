@@ -12,12 +12,14 @@ import com.noteapp.note.model.NoteBlock;
 import com.noteapp.note.model.NoteFilter;
 import com.noteapp.note.model.ShareNote;
 import com.noteapp.note.model.TextBlock;
+import com.noteapp.note.service.INoteService;
+import com.noteapp.note.service.IShareNoteService;
 import com.noteapp.note.service.NoteService;
 import com.noteapp.user.model.User;
 import com.noteapp.note.service.NoteServiceException;
 import com.noteapp.note.service.ShareNoteService;
-import com.noteapp.user.dao.AdminDAO;
 import com.noteapp.user.dao.UserDAO;
+import com.noteapp.user.service.IUserService;
 import com.noteapp.user.service.UserService;
 import com.noteapp.user.service.UserServiceException;
 import java.io.File;
@@ -173,13 +175,13 @@ public class DashboardController extends InitableController {
     private List<ShareNote> mySharedNotes;
     private List<Note> openedNotes;
     
-    protected UserService userService;
-    protected NoteService noteService;
-    protected ShareNoteService shareNoteService;
+    protected IUserService userService;
+    protected INoteService noteService;
+    protected IShareNoteService shareNoteService;
     
     @Override
     public void init() {
-        userService = new UserService(UserDAO.getInstance(), AdminDAO.getInstance());
+        userService = new UserService(UserDAO.getInstance());
         noteService = new NoteService(NoteDAO.getInstance(), NoteFilterDAO.getInstance(), 
                 NoteBlockDAO.getInstance(), TextBlockDAO.getInstance(), SurveyBlockDAO.getInstance());
         shareNoteService = new ShareNoteService(ShareNoteDAO.getInstance(), UserDAO.getInstance(), 
@@ -598,7 +600,7 @@ public class DashboardController extends InitableController {
         //Lấy Email
         Email email = new Email();
         email.setAddress(emailAddressField.getText());
-        if(!email.checkEmailAddress()) {
+        if(!email.checkAddress()) {
             errorEmailFieldLabel.setVisible(true);
         }
         myUser.setEmail(email);

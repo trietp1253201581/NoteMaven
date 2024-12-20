@@ -2,16 +2,13 @@ package com.noteapp.note.service;
 
 import com.noteapp.common.dao.DAOException;
 import com.noteapp.common.dao.NotExistDataException;
+import com.noteapp.note.dao.IConcreateBlockDAO;
 import com.noteapp.note.dao.INoteBlockDAO;
 import com.noteapp.note.dao.INoteDAO;
 import com.noteapp.note.dao.INoteFilterDAO;
 import com.noteapp.note.dao.IShareNoteDAO;
-import com.noteapp.note.dao.ISurveyBlockDAO;
-import com.noteapp.note.dao.ITextBlockDAO;
 import com.noteapp.note.model.Note;
 import com.noteapp.note.model.NoteBlock;
-import static com.noteapp.note.model.NoteBlock.BlockType.SURVEY;
-import static com.noteapp.note.model.NoteBlock.BlockType.TEXT;
 import com.noteapp.note.model.ShareNote;
 import com.noteapp.note.model.SurveyBlock;
 import com.noteapp.note.model.TextBlock;
@@ -25,14 +22,25 @@ import java.util.List;
  * @see IUserDAO
  * @see IShareNoteDAO
  */
-public class ShareNoteService extends NoteService {
+public class ShareNoteService implements IShareNoteService {
     protected IShareNoteDAO shareNoteDAO;
     protected IUserDAO userDAO;
+    protected SupportedNoteBlockService blockService;
+    protected INoteService noteService;
 
-    public ShareNoteService(IShareNoteDAO shareNoteDAO, IUserDAO userDAO, INoteDAO noteDAO, INoteFilterDAO noteFilterDAO, INoteBlockDAO noteBlockDAO, ITextBlockDAO textBlockDAO, ISurveyBlockDAO surveyBlockDAO) {
-        super(noteDAO, noteFilterDAO, noteBlockDAO, textBlockDAO, surveyBlockDAO);
+    public ShareNoteService(IShareNoteDAO shareNoteDAO, IUserDAO userDAO, INoteDAO noteDAO, INoteFilterDAO noteFilterDAO, INoteBlockDAO noteBlockDAO, IConcreateBlockDAO<TextBlock> textBlockDAO, IConcreateBlockDAO<SurveyBlock> surveyBlockDAO) {
         this.shareNoteDAO = shareNoteDAO;
         this.userDAO = userDAO;
+        noteService = new NoteService(noteDAO, noteFilterDAO, noteBlockDAO, textBlockDAO, surveyBlockDAO);
+        blockService = new SupportedNoteBlockService(noteBlockDAO, textBlockDAO, surveyBlockDAO);
+    }
+
+    public void setBlockService(SupportedNoteBlockService blockService) {
+        this.blockService = blockService;
+    }
+
+    public void setNoteService(INoteService noteService) {
+        this.noteService = noteService;
     }
 
     public void setShareNoteDAO(IShareNoteDAO shareNoteDAO) {
@@ -43,22 +51,7 @@ public class ShareNoteService extends NoteService {
         this.userDAO = userDAO;
     }
     
-    /**
-     * Chia sẻ một Note tới một người chỉnh sửa khác theo một trong hai loại
-     * (chỉ đọc hoặc có thể chỉnh sửa)
-     * @param note Note cần được chia sẻ
-     * @param editor username của người nhận Note này
-     * @param shareType Loại chia sẻ (Chỉ đọc hoặc có thể Edit)
-     * @return Một ShareNote (một Note được chia sẻ giữa nhiều người)
-     * @throws NoteServiceException Xảy ra khi các thao tác với CSDL tương ứng
-     * bị lỗi
-     * @see IUserDAO#get(String)
-     * @see IShareNoteDAO#get(int, String)
-     * @see IShareNoteDAO#update(ShareNote) 
-     * @see #open(int, String)
-     * @see IShareNoteDAO#create(ShareNote)
-     * @see DAOException
-     */
+    @Override
     public ShareNote share(Note note, String editor, ShareNote.ShareType shareType) throws NoteServiceException {
         if (userDAO == null || shareNoteDAO == null) {
             throw new NoteServiceException("DAO is null!");
@@ -67,7 +60,6 @@ public class ShareNoteService extends NoteService {
         try {
             userDAO.get(editor);
         } catch (DAOException ex) {
-            ex.printStackTrace();
             throw new NoteServiceException(ex.getMessage(), ex.getCause());
         } 
         //Set các thông tin của note cho shareNote
@@ -83,7 +75,6 @@ public class ShareNoteService extends NoteService {
         } catch (NotExistDataException ex1) {
             //Nếu không thì cần tạo mới trong CSDL
         } catch (DAOException ex2) {
-            ex2.printStackTrace();
             throw new NoteServiceException(ex2.getMessage(), ex2.getCause());
         }
         //Kiểm tra note của User đã được chia sẻ cho người khác hay chưa
@@ -99,7 +90,6 @@ public class ShareNoteService extends NoteService {
                 throw new NoteServiceException(ex3.getMessage(), ex3.getCause());
             }    
         } catch (DAOException ex2) {
-            ex2.printStackTrace();
             throw new NoteServiceException(ex2.getMessage(), ex2.getCause());
         }
         try {
@@ -110,53 +100,30 @@ public class ShareNoteService extends NoteService {
             List<NoteBlock> authorBlocks = note.getBlocks();
             for(NoteBlock noteBlock: authorBlocks) {
                 NoteBlock thisEditorBlock = noteBlock;
-                thisEditorBlock.setEditor(shareNote.getEditor());
-                switch (thisEditorBlock.getBlockType()) {
-                    case TEXT -> {
-                        TextBlock newTextBlock = (TextBlock) thisEditorBlock;
-                        textBlockDAO.create(newTextBlock);
-                    }
-                    case SURVEY -> {
-                        SurveyBlock newSurveyBlock = (SurveyBlock) thisEditorBlock;
-                        surveyBlockDAO.create(newSurveyBlock);
-                    }
-
-                }
+                blockService.createOtherVersion(thisEditorBlock, shareNote.getEditor());
             }
             shareNoteDAO.create(shareNote);
             note.setPubliced(true);
-            super.save(note);
+            noteService.save(note);
             return this.open(shareNote.getId(), shareNote.getEditor());
         } catch (DAOException ex) {
-            ex.printStackTrace();
             throw new NoteServiceException(ex.getMessage(), ex.getCause());
         }
     }
     
-    /**
-     * Mở một Note được chia sẻ (ShareNote)
-     * @param noteId id của Note cần mở
-     * @param editor username là người chỉnh sửa phiên bản Note này
-     * @return Một ShareNote được mở thành công
-     * @throws NoteServiceException Xảy ra khi các thao tác với CSDL tương ứng
-     * bị lỗi
-     * @see #open(int) 
-     * @see IShareNoteDAO#get(int, String)
-     * @see #getAllBlocks(int) 
-     * @see DAOException
-     */
+    @Override
     public ShareNote open(int noteId, String editor) throws NoteServiceException {
         if (shareNoteDAO == null) {
             throw new NoteServiceException("DAO is null!");
         }
         //Trước hết mở Note
-        Note note = super.open(noteId);
+        Note note = noteService.open(noteId);
         //Mở phiên bản Note của editor
         try {
             ShareNote shareNote = shareNoteDAO.get(noteId, editor);
             shareNote.setNote(note);
             //Lấy và phân loại block nào của editor này và cái nào của editor khác
-            List<NoteBlock> blocks = super.getAllBlocks(noteId);
+            List<NoteBlock> blocks = blockService.getAll(noteId);
             List<NoteBlock> thisEditorBlocks = new ArrayList<>();
             for(NoteBlock noteBlock: blocks) {
                 if(editor.equals(noteBlock.getEditor())) {
@@ -168,20 +135,11 @@ public class ShareNoteService extends NoteService {
             shareNote.setBlocks(thisEditorBlocks);
             return shareNote;
         } catch (DAOException ex) {
-            ex.printStackTrace();
             throw new NoteServiceException(ex.getMessage(), ex.getCause());
         }
     }
     
-    /**
-     * Lấy tất cả các ShareNote được chia sẻ tới người chỉnh sửa này
-     * @param editor username của User
-     * @return Một List các ShareNote là các Note được chia sẻ tới User này
-     * @throws NoteServiceException Xảy ra khi các thao tác với CSDL tương ứng
-     * bị lỗi
-     * @see IShareNoteDAO#getAll(String)
-     * @see #open(int, String) 
-     */
+    @Override
     public List<ShareNote> getAllReceived(String editor) throws NoteServiceException {
         if (shareNoteDAO == null) {
             throw new NoteServiceException("DAO is null!");

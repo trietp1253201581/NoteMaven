@@ -2,7 +2,8 @@ package com.noteapp.controller;
 
 import com.noteapp.user.dao.AdminDAO;
 import com.noteapp.user.dao.UserDAO;
-import com.noteapp.user.service.UserService;
+import com.noteapp.user.service.AdminService;
+import com.noteapp.user.service.IAdminService;
 import com.noteapp.user.service.UserServiceException;
 import java.io.IOException;
 import java.util.HashMap;
@@ -32,12 +33,12 @@ public class AdminDashboardController extends InitableController {
     @FXML
     private Button logoutButton;
     
-    protected UserService userService;
+    protected IAdminService adminService;
     protected Map<String, Boolean> lockedStatusOfUsers;
     
     @Override
     public void init() {
-        userService = new UserService(UserDAO.getInstance(), AdminDAO.getInstance());
+        adminService = new AdminService(UserDAO.getInstance(), AdminDAO.getInstance());
         initView();
         closeButton.setOnAction((ActionEvent event) -> {
             close();
@@ -55,7 +56,7 @@ public class AdminDashboardController extends InitableController {
     
     public void initView() {
         try {
-            lockedStatusOfUsers = userService.getAllLockedStatus();
+            lockedStatusOfUsers = adminService.getAllLockedStatus();
             loadUsers(lockedStatusOfUsers);
         } catch (UserServiceException ex) {
             showAlert(Alert.AlertType.ERROR, ex.getMessage());
@@ -83,7 +84,7 @@ public class AdminDashboardController extends InitableController {
                     boolean thisLockedStatus = controller.isLocked();
                     this.lockedStatusOfUsers.put(thisUsername, thisLockedStatus);
                     try {
-                        userService.updateLockedStatus(thisUsername, thisLockedStatus);
+                        adminService.updateLockedStatus(thisUsername, thisLockedStatus);
                     } catch (UserServiceException ex) {
                         System.err.println(ex.getCause());
                     }

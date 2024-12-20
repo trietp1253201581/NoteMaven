@@ -2,8 +2,10 @@ package com.noteapp.controller;
 
 import com.noteapp.user.dao.AdminDAO;
 import com.noteapp.user.dao.UserDAO;
-import com.noteapp.user.model.Admin;
 import com.noteapp.user.model.User;
+import com.noteapp.user.service.AdminService;
+import com.noteapp.user.service.IAdminService;
+import com.noteapp.user.service.IUserService;
 import com.noteapp.user.service.UserService;
 import com.noteapp.user.service.UserServiceException;
 import java.io.IOException;
@@ -39,11 +41,13 @@ public class LoginController extends InitableController {
     @FXML
     private Label forgotPasswordLabel;
     
-    protected UserService userService;
+    protected IUserService userService;
+    protected IAdminService adminService;
         
     @Override
     public void init() {
-        userService = new UserService(UserDAO.getInstance(), AdminDAO.getInstance());
+        userService = new UserService(UserDAO.getInstance());
+        adminService = new AdminService(UserDAO.getInstance(), AdminDAO.getInstance());
         loginButton.setOnAction((ActionEvent event) -> {
             login();
         });
@@ -65,14 +69,14 @@ public class LoginController extends InitableController {
       
         //Kiểm tra thông tin đăng nhập
         try { 
-            boolean isAdmin = userService.isAdmin(username);
+            boolean isAdmin = adminService.isAdmin(username);
             if (!isAdmin) {
                 User user = userService.checkUser(username, password);
                 showAlert(Alert.AlertType.INFORMATION, "Successfully Login");
                 //Mở Dashboard của user này
                 DashboardController.open(user, stage);
             } else {
-                userService.checkAdmin(username, password);
+                adminService.checkAdmin(username, password);
                 showAlert(Alert.AlertType.INFORMATION, "Successfully Login");
                 //Mở Dashboard của user này
                 AdminDashboardController.open(stage);
