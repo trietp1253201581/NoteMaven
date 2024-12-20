@@ -45,6 +45,7 @@ public class SurveyBlockController extends InitableController {
         surveyBlock = new SurveyBlock();
         otherEditors = new ArrayList<>();
         itemsController = new ArrayList<>();
+        changeNotify.setVisible(false);
         
         addItemButton.setOnAction((ActionEvent event) -> {
             addItem();
@@ -155,6 +156,10 @@ public class SurveyBlockController extends InitableController {
 
     public void setNoteId(int noteId) {
         this.noteId = noteId;
+    }
+
+    public Label getBlockHeader() {
+        return blockHeader;
     }
 
     public SurveyBlock getSurveyBlock() {

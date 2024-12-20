@@ -9,6 +9,8 @@ import com.noteapp.user.model.User;
  */
 public interface IUserService {
     
+    boolean isUser(String username) throws UserServiceException;
+    
     /**
      * Tạo một {@link User} mới và lưu và CSDL, đồng thời trả lại User vừa tạo
      * @param newUser User cần tạo

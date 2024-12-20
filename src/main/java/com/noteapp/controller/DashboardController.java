@@ -184,7 +184,7 @@ public class DashboardController extends InitableController {
         userService = new UserService(UserDAO.getInstance());
         noteService = new NoteService(NoteDAO.getInstance(), NoteFilterDAO.getInstance(), 
                 NoteBlockDAO.getInstance(), TextBlockDAO.getInstance(), SurveyBlockDAO.getInstance());
-        shareNoteService = new ShareNoteService(ShareNoteDAO.getInstance(), UserDAO.getInstance(), 
+        shareNoteService = new ShareNoteService(ShareNoteDAO.getInstance(),  
                 NoteDAO.getInstance(), NoteFilterDAO.getInstance(), 
                 NoteBlockDAO.getInstance(), TextBlockDAO.getInstance(), SurveyBlockDAO.getInstance());
         initView();

@@ -19,6 +19,9 @@ import com.noteapp.user.model.User;
 import com.noteapp.note.service.NoteServiceException;
 import com.noteapp.note.service.ShareNoteService;
 import com.noteapp.user.dao.UserDAO;
+import com.noteapp.user.service.IUserService;
+import com.noteapp.user.service.UserService;
+import com.noteapp.user.service.UserServiceException;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
@@ -88,6 +91,7 @@ public class EditNoteController extends InitableController {
     protected List<Note> openedNotes;
     protected INoteService noteService;
     protected IShareNoteService shareNoteService;
+    protected IUserService userService;
 
     public void setMyUser(User myUser) {
         this.myUser = myUser;
@@ -107,9 +111,10 @@ public class EditNoteController extends InitableController {
     public void init() {
         noteService = new NoteService(NoteDAO.getInstance(), NoteFilterDAO.getInstance(), 
                 NoteBlockDAO.getInstance(), TextBlockDAO.getInstance(), SurveyBlockDAO.getInstance());
-        shareNoteService = new ShareNoteService(ShareNoteDAO.getInstance(), UserDAO.getInstance(), 
+        shareNoteService = new ShareNoteService(ShareNoteDAO.getInstance(),  
                 NoteDAO.getInstance(), NoteFilterDAO.getInstance(), 
                 NoteBlockDAO.getInstance(), TextBlockDAO.getInstance(), SurveyBlockDAO.getInstance());
+        userService = new UserService(UserDAO.getInstance());
         textBlockControllers = new ArrayList<>();
         surveyBlockControllers = new ArrayList<>();
         initView();
@@ -298,6 +303,24 @@ public class EditNoteController extends InitableController {
                 shareType = ShareNote.ShareType.READ_ONLY;
             }
             String receiver = result.get(0);
+            boolean isExistReceiver = false;
+            try {
+                isExistReceiver = userService.isUser(receiver);
+            } catch (UserServiceException ex) {
+                
+            }
+            if (!isExistReceiver) {
+                showAlert(Alert.AlertType.ERROR, "Receiver is not exist!");
+                return;
+            }
+            boolean isLocked = false;
+            try {
+                isLocked = userService.checkLocked(receiver);
+            } catch (UserServiceException ex) {
+            }
+            if (isLocked) {
+                showAlert(Alert.AlertType.ERROR, "Your account is locked!");
+            }
             try {
                 shareNoteService.share(myNote, receiver, shareType);
                 showAlert(Alert.AlertType.INFORMATION, "Successfully share!");
@@ -349,6 +372,17 @@ public class EditNoteController extends InitableController {
                 blocksLayout.getChildren().remove(order);
                 blocksLayout.getChildren().add(order - 1, temp);
             });
+            
+            controller.getBlockHeader().setOnMouseClicked((MouseEvent event) -> {
+                TextInputDialog dialog = new TextInputDialog();
+                dialog.setHeaderText("Input your new header");
+                
+                dialog.showAndWait().ifPresent(newHeader -> {
+                    controller.setHeader(newHeader);
+                    controller.getTextBlock().setHeader(newHeader);
+                });
+                
+            });
              
             blocksLayout.getChildren().add(box);
             textBlockControllers.add(controller);
@@ -396,6 +430,16 @@ public class EditNoteController extends InitableController {
                 Node temp = blocksLayout.getChildren().get(order);
                 blocksLayout.getChildren().remove(order);
                 blocksLayout.getChildren().add(order - 1, temp);
+            });
+            
+            controller.getBlockHeader().setOnMouseClicked((MouseEvent event) -> {
+                TextInputDialog dialog = new TextInputDialog();
+                dialog.setHeaderText("Input your new header");
+                
+                dialog.showAndWait().ifPresent(newHeader -> {
+                    controller.setHeader(newHeader);
+                    controller.getSurveyBlock().setHeader(newHeader);
+                });
             });
              
             blocksLayout.getChildren().add(box);

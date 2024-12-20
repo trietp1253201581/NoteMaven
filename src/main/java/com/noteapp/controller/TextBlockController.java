@@ -156,6 +156,10 @@ public class TextBlockController extends InitableController {
     public void returnToYourContent() {
         editableText.setText(textBlock.getContent());
     }
+
+    public Label getBlockHeader() {
+        return blockHeader;
+    }
     
     public void setChangeNotify(List<String> hadModifiedEditors) {
         if(hadModifiedEditors.isEmpty()) {

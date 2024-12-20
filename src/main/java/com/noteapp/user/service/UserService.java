@@ -24,6 +24,21 @@ public class UserService implements IUserService {
     }
     
     @Override
+    public boolean isUser(String username) throws UserServiceException {
+        if (userDAO == null) {
+            throw new UserServiceException("DAO is null");
+        }
+        try {
+            userDAO.get(username);
+            return true;
+        } catch (NotExistDataException ex1) {
+            return false;
+        } catch (DAOException ex2) {
+            throw new UserServiceException(ex2.getMessage(), ex2.getCause());
+        }
+    }
+    
+    @Override
     public User create(User newUser) throws UserServiceException {
         if (userDAO == null) {
             throw new UserServiceException("DAO is null!");

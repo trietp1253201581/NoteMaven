@@ -12,7 +12,6 @@ import com.noteapp.note.model.NoteBlock;
 import com.noteapp.note.model.ShareNote;
 import com.noteapp.note.model.SurveyBlock;
 import com.noteapp.note.model.TextBlock;
-import com.noteapp.user.dao.IUserDAO;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,13 +23,11 @@ import java.util.List;
  */
 public class ShareNoteService implements IShareNoteService {
     protected IShareNoteDAO shareNoteDAO;
-    protected IUserDAO userDAO;
     protected SupportedNoteBlockService blockService;
     protected INoteService noteService;
 
-    public ShareNoteService(IShareNoteDAO shareNoteDAO, IUserDAO userDAO, INoteDAO noteDAO, INoteFilterDAO noteFilterDAO, INoteBlockDAO noteBlockDAO, IConcreateBlockDAO<TextBlock> textBlockDAO, IConcreateBlockDAO<SurveyBlock> surveyBlockDAO) {
+    public ShareNoteService(IShareNoteDAO shareNoteDAO, INoteDAO noteDAO, INoteFilterDAO noteFilterDAO, INoteBlockDAO noteBlockDAO, IConcreateBlockDAO<TextBlock> textBlockDAO, IConcreateBlockDAO<SurveyBlock> surveyBlockDAO) {
         this.shareNoteDAO = shareNoteDAO;
-        this.userDAO = userDAO;
         noteService = new NoteService(noteDAO, noteFilterDAO, noteBlockDAO, textBlockDAO, surveyBlockDAO);
         blockService = new SupportedNoteBlockService(noteBlockDAO, textBlockDAO, surveyBlockDAO);
     }
@@ -46,22 +43,12 @@ public class ShareNoteService implements IShareNoteService {
     public void setShareNoteDAO(IShareNoteDAO shareNoteDAO) {
         this.shareNoteDAO = shareNoteDAO;
     }
-
-    public void setUserDAO(IUserDAO userDAO) {
-        this.userDAO = userDAO;
-    }
     
     @Override
     public ShareNote share(Note note, String editor, ShareNote.ShareType shareType) throws NoteServiceException {
-        if (userDAO == null || shareNoteDAO == null) {
+        if (shareNoteDAO == null) {
             throw new NoteServiceException("DAO is null!");
         }
-        //Kiểm tra User đã tồn tại hay chưa
-        try {
-            userDAO.get(editor);
-        } catch (DAOException ex) {
-            throw new NoteServiceException(ex.getMessage(), ex.getCause());
-        } 
         //Set các thông tin của note cho shareNote
         int noteId = note.getId();
         ShareNote shareNote = new ShareNote();

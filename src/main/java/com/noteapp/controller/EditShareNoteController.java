@@ -14,12 +14,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -35,12 +39,15 @@ public class EditShareNoteController extends EditNoteController {
     protected Timer updateTimer;
     protected TimerTask updateTimerTask;
     
+    protected boolean needReload;
+    
     public void setMyShareNote(ShareNote myShareNote) {
         this.myShareNote = myShareNote;
     }
     
     @Override
     public void init() {
+        needReload = false;
         super.init();
     }
     
@@ -55,12 +62,14 @@ public class EditShareNoteController extends EditNoteController {
     @Override
     protected void initBlock() {
         blocksLayout.getChildren().clear();
-        List<NoteBlock> blocks = myNote.getBlocks();
+        textBlockControllers.clear();
+        surveyBlockControllers.clear();
+        List<NoteBlock> blocks = myShareNote.getBlocks();
         Map<Integer, List<NoteBlock>> otherEditorBlocks = myShareNote.getOtherEditorBlocks();
         othersTextBlockById = new HashMap<>();
         othersSurveyBlockById = new HashMap<>();
         
-        getBlocksByHeader(otherEditorBlocks);
+        getBlocksById(otherEditorBlocks);
         
         for(int i=0; i<blocks.size(); i++) {
             if(blocks.get(i).getBlockType() == NoteBlock.BlockType.TEXT) {
@@ -71,6 +80,14 @@ public class EditShareNoteController extends EditNoteController {
         }
     }
     
+    public void reload() {
+        updateTimerTask.cancel();
+        updateTimer.cancel();
+        initBlock();
+        needReload = false;
+        setOnAutoUpdate();
+    }
+    
     public void setOnAutoUpdate() {
         updateTimer = new Timer();
         updateTimerTask = new TimerTask() {
@@ -78,13 +95,20 @@ public class EditShareNoteController extends EditNoteController {
             public void run() {
                 Platform.runLater(() -> {
                     try {
+                        if (needReload) {
+                            Optional<ButtonType> btnType = showAlert(Alert.AlertType.WARNING, "You need to reload.");
+                            if (btnType.get() == ButtonType.OK) {
+                                reload();
+                            }
+                        }
                         myShareNote = shareNoteService.open(myShareNote.getId(), myShareNote.getEditor());
                         noteHeaderLabel.setText(myShareNote.getHeader());
                         loadFilter(myShareNote.getFilters(), 8);
                         Map<Integer, List<NoteBlock>> otherEditorBlocks = myShareNote.getOtherEditorBlocks();
-                        getBlocksByHeader(otherEditorBlocks);
+                        getBlocksById(otherEditorBlocks);
                         updateTextBlock();
                         updateSurveyBlock();
+                        
                     } catch (NoteServiceException ex) {
                         showAlert(Alert.AlertType.WARNING, "Can't update!");
                     }
@@ -150,6 +174,17 @@ public class EditShareNoteController extends EditNoteController {
                 blocksLayout.getChildren().remove(order);
                 blocksLayout.getChildren().add(order - 1, temp);
             });
+            
+            controller.getBlockHeader().setOnMouseClicked((MouseEvent event) -> {
+                TextInputDialog dialog = new TextInputDialog();
+                dialog.setHeaderText("Input your new header");
+                
+                dialog.showAndWait().ifPresent(newHeader -> {
+                    controller.setHeader(newHeader);
+                    controller.getTextBlock().setHeader(newHeader);
+                });
+                
+            });
              
             blocksLayout.getChildren().add(box);
             textBlockControllers.add(controller);
@@ -181,7 +216,7 @@ public class EditShareNoteController extends EditNoteController {
         }
     }
     
-    protected void getBlocksByHeader(Map<Integer, List<NoteBlock>> otherEditorBlocks) {
+    protected void getBlocksById(Map<Integer, List<NoteBlock>> otherEditorBlocks) {
         othersTextBlockById = new HashMap<>();
         othersSurveyBlockById = new HashMap<>();
         
@@ -209,6 +244,16 @@ public class EditShareNoteController extends EditNoteController {
         for (int i = 0; i < textBlockControllers.size(); i++) {
             TextBlock thisBlock = textBlockControllers.get(i).getTextBlock();
             List<TextBlock> otherEditors = othersTextBlockById.get(thisBlock.getId());
+            for (TextBlock otherEditor: otherEditors) {
+                if (!otherEditor.getHeader().equals(thisBlock.getHeader())) {
+                    needReload = true;
+                    break;
+                } 
+                if (otherEditor.getOrder() != thisBlock.getOrder()) {
+                    needReload = true;
+                    break;
+                }
+            }
 
             textBlockControllers.get(i).updateOtherEditors(otherEditors);
             textBlockControllers.get(i).initOtherEditComboBox();
@@ -219,7 +264,16 @@ public class EditShareNoteController extends EditNoteController {
         for (int i = 0; i < surveyBlockControllers.size(); i++) {
             SurveyBlock thisBlock = surveyBlockControllers.get(i).getSurveyBlock();
             List<SurveyBlock> otherEditors = othersSurveyBlockById.get(thisBlock.getId());
-
+            for (SurveyBlock otherEditor: otherEditors) {
+                if (!otherEditor.getHeader().equals(thisBlock.getHeader())) {
+                    needReload = true;
+                    break;
+                } 
+                if (otherEditor.getOrder() != thisBlock.getOrder()) {
+                    needReload = true;
+                    break;
+                }
+            }
             surveyBlockControllers.get(i).setOtherEditors(otherEditors);
             surveyBlockControllers.get(i).loadItems();
         }
@@ -248,7 +302,39 @@ public class EditShareNoteController extends EditNoteController {
                 myNote.getBlocks().remove(idxToDelete);
                 surveyBlockControllers.remove(idxToDelete);
             });
-             
+            
+            controller.getUpButton().setOnAction((ActionEvent event) -> {
+                int order = controller.getSurveyBlock().getOrder();
+                if (order <= 1) return;
+                swapOrder(order - 1, order);
+                
+                //Swap
+                Node temp = blocksLayout.getChildren().get(order - 1);
+                blocksLayout.getChildren().remove(order - 1);
+                blocksLayout.getChildren().add(order - 2, temp);
+            });
+            
+            controller.getDownButton().setOnAction((ActionEvent event) -> {
+                int order = controller.getSurveyBlock().getOrder();
+                if (order >= blocksLayout.getChildren().size()) return;
+                swapOrder(order, order + 1);
+                
+                //Swap
+                Node temp = blocksLayout.getChildren().get(order);
+                blocksLayout.getChildren().remove(order);
+                blocksLayout.getChildren().add(order - 1, temp);
+            });
+            
+            controller.getBlockHeader().setOnMouseClicked((MouseEvent event) -> {
+                TextInputDialog dialog = new TextInputDialog();
+                dialog.setHeaderText("Input your new header");
+                
+                dialog.showAndWait().ifPresent(newHeader -> {
+                    controller.setHeader(newHeader);
+                    controller.getSurveyBlock().setHeader(newHeader);
+                });
+            });
+            
             blocksLayout.getChildren().add(box);
             surveyBlockControllers.add(controller);
         } catch (IOException ex) {

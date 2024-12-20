@@ -27,6 +27,7 @@ com\noteapp\note\dao\TextBlockDAO$QueriesType.class
 com\noteapp\controller\RegisterController$1.class
 com\noteapp\note\dao\INoteBlockDAO.class
 com\noteapp\note\dao\NoteDAO$SingletonHelper.class
+com\noteapp\note\service\INoteService.class
 com\noteapp\common\dao\FailedExecuteException.class
 com\noteapp\controller\ResetPasswordController$1.class
 com\noteapp\user\service\AdminService.class
@@ -57,6 +58,7 @@ com\noteapp\controller\InitableController.class
 com\noteapp\user\dao\AdminDAO$ColumnName.class
 com\noteapp\note\model\SurveyBlock.class
 com\noteapp\user\service\IAdminService.class
+com\noteapp\note\service\IShareNoteService.class
 com\noteapp\note\dao\INoteDAO.class
 com\noteapp\note\dao\SurveyBlockDAO.class
 com\noteapp\note\dao\INoteFilterDAO.class
